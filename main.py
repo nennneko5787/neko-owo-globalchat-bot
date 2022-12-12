@@ -6,6 +6,7 @@ try:
 	from discordtoken import token
 except ImportError:
 	token = os.getenv('DISCORD_TOKEN_NEKOGLOBALCHAT')  #Your TOKEN
+from server import keep_alive
 global_channel_name = "neko-global-chat"  #設定したいチャンネル名を入力
 intents=discord.Intents.default()
 intents.message_content=True
@@ -46,6 +47,17 @@ async def on_message(message):
                     
                 await channel.send(embed=embed) #メッセージを送信
         await message.add_reaction('✅') #リアクションを送信
+async def on_guild_join(guild):
+	for channel in client.get_all_channels(): #BOTが所属する全てのチャンネルをループ
+		if channel.name == global_channel_name: #グローバルチャット用のチャンネルが見つかったとき
+			if channel == message.channel: #発言したチャンネルには送らない
+				continue
+
+			embed=discord.Embed(description="{guild.name}に", color=0x9B95C9) #埋め込みの説明に、メッセージを挿入し、埋め込みのカラーを紫`#9B95C9`に設定
+			embed.set_author(name="^owo^ neko globalchat bot", icon_url="https://cdn.discordapp.com/avatars/1051683005472702465/2970fd778933a2a40d634bdf2e5b5e68.png?size=256")
+			embed.set_footer(text="Welcome to ^owo^ neko globalchat bot!",icon_url="https://media.discordapp.net/icons/{}/{}.png?size=1024".format(message.guild.id, message.guild.icon))
+			await channel.send(embed=embed) #メッセージを送信
+			await message.guild.create_text_channel(name="neko-global-chat")
 
 keep_alive()
 client.run(token)
