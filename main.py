@@ -7,8 +7,10 @@ from discordtoken import token
 if not token:
 	token = os.getenv('DISCORD_TOKEN_NEKOGLOBALCHAT')  #Your TOKEN
 global_channel_name = "neko-global-chat"  #設定したいチャンネル名を入力
+intents=discord.Intents.default()
+intents.message_content=True
 
-client = discord.Client(intents=discord.Intents.default())  #接続に必要なオブジェクトを生成
+client = discord.Client(intents=intents)  #接続に必要なオブジェクトを生成
 
 @client.event
 async def on_message(message):
