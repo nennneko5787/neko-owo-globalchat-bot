@@ -2,9 +2,9 @@
 #https://discord.com/api/oauth2/authorize?client_id=1051683005472702465&permissions=8&scope=bot
 import os
 import discord
-from discordtoken import token
-
-if not token:
+try:
+	from discordtoken import token
+except ImportError:
 	token = os.getenv('DISCORD_TOKEN_NEKOGLOBALCHAT')  #Your TOKEN
 global_channel_name = "neko-global-chat"  #設定したいチャンネル名を入力
 intents=discord.Intents.default()
@@ -47,4 +47,5 @@ async def on_message(message):
                 await channel.send(embed=embed) #メッセージを送信
         await message.add_reaction('✅') #リアクションを送信
 
+keep_alive()
 client.run(token)
