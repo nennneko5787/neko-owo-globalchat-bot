@@ -26,8 +26,8 @@ async def on_message(message):
                     continue
                     
                 embed=discord.Embed(description=message.content, color=0x9B95C9) #埋め込みの説明に、メッセージを挿入し、埋め込みのカラーを紫`#9B95C9`に設定
-                embed.set_author(name="{}#{}".format(message.author.name, message.author.discriminator),icon_url="https://media.discordapp.net/avatars/{}/{}.png?size=1024".format(message.author.id, message.author.avatar))
-                embed.set_footer(text="{} / mID:{}".format(message.guild.name, message.id),icon_url="https://media.discordapp.net/icons/{}/{}.png?size=1024".format(message.guild.id, message.guild.icon))
+                embed.set_author(name="{}#{}".format(message.author.name, message.author.discriminator),icon_url=message.guild.icon)
+                embed.set_footer(text="{} / mID:{}".format(message.guild.name, message.id),icon_url=message.guild.icon)
                 if message.attachments != []: #添付ファイルが存在するとき
                     embed.set_image(url=message.attachments[0].url)
 
