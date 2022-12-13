@@ -1,0 +1,1 @@
+# ^owo^ neko globalchat bot
