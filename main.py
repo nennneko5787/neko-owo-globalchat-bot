@@ -2,10 +2,6 @@
 #https://discord.com/api/oauth2/authorize?client_id=1051683005472702465&permissions=8&scope=bot
 import os
 import discord
-try:
-  from discordtoken import token
-except ImportError:
-  token = os.getenv('DISCORD_TOKEN_NEKOGLOBALCHAT')  #Your TOKEN
 from server import keep_alive
 from discord.ext import tasks
 import pytz
@@ -122,11 +118,12 @@ async def on_ready():
 @tasks.loop(seconds=20)
 async def reloadPresence():
   await client.change_presence(activity=discord.Game(
-    name="{} Servers / Program by nennneko5787 / Server by Garbage replit".
+    name="{} Servers / Program by nennneko5787 / Server by render.com".
     format(len(client.guilds))))
 
 
 keep_alive()
+token = os.getenv('DISCORD_TOKEN_NEKOGLOBALCHAT')
 try:
   client.run(token)
 except:
