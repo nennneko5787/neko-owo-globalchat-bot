@@ -18,7 +18,7 @@ client = discord.Client(intents=intents)  #接続に必要なオブジェクト�
 
 @client.event
 async def on_guild_join(guild):
-  await guild.create_text_channel("neko-global-chat")
+  chan = await guild.create_text_channel("neko-global-chat")
 
 
 @client.event
