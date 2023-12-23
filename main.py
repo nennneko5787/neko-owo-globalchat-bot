@@ -37,8 +37,8 @@ async def on_message(message):
           embed = discord.Embed(
             description=message.content,
             color=message.author.colour,
-            url="https://neko-owo-globalchat-bot.nennneko5787.repl.co/?id={}".
-            format(message.id))  #埋め込みの説明に、メッセージを挿入し、埋め込みのカラーを紫`#9B95C9`に設定
+            url="https://owo-neko-globalchat-bot.onrender.com/?guildid={}&msgid={}".
+            format(message.guild.id,message.id))  #埋め込みの説明に、メッセージを挿入し、埋め込みのカラーを紫`#9B95C9`に設定
           if (message.author.id
               == 1048448686914551879) or (message.author.id
                                           == 1026050624556638208):
@@ -88,10 +88,10 @@ async def on_message(message):
           embeds = []
           embeds.append(embed)
           if message.attachments != []:  #添付ファイルが存在するとき
-            for tenpura in message.attachments:  #BOTが所属する全てのチャンネルをループ
+            for tenpura in message.attachments:  #すべての添付ファイルをループ
               embed2 = discord.Embed(
-                url="https://neko-owo-globalchat-bot.nennneko5787.repl.co/?id={}"
-                .format(message.id))  #埋め込みの説明
+                url="https://owo-neko-globalchat-bot.onrender.com/?guildid={}&msgid={}".
+                  format(message.guild.id,message.id))  #埋め込みの説明
               embed2.set_image(url=tenpura)
               embeds.append(embed2)
           try:
