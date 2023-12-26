@@ -201,11 +201,11 @@ async def on_reaction_add(reaction, user):
 	if user != reaction.message.guild.me:
 		try:
 			cursor.execute("SELECT * FROM message WHERE message = %s",(reaction.message.id,))
-			query_result = cursor.fetchall()
+			query_result = cur.fetchone()
 			cursor.close()
 			cursor = connection.cursor()
 
-			dat = dict(query_result[0])
+			dat = dict(query_result)
 
 			cursor.execute("SELECT * FROM message WHERE raw_message = %s",dat["raw_message"])
 			query_result = cursor.fetchall()
