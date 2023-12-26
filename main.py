@@ -32,6 +32,7 @@ intents.reactions = True
 
 client = discord.Client(intents=intents)  # 接続に必要なオブジェクトを生成
 
+log_chan = 0
 
 @client.event
 async def on_guild_join(guild):
@@ -181,12 +182,12 @@ async def on_message(message):
 						cursor.execute(sql, (newmsg.id, newmsg.channel.id, newmsg.guild.id, message.id, message.channel.id, message.guild.id))
 						connection.commit()
 					except Exception as e:  # work on python 3.x
-						print(
+						log_chan.send(
 							"サーバーID[{}]({})にて{}エラーが発生したため、処理をスキップします。".format(
 								channel.id, channel.guild.name, str(e)
 							)
 						)
-						print(traceback.format_exc())
+						log_chan.send(traceback.format_exc())
 						continue
 
 		await message.add_reaction("✅")
@@ -200,21 +201,21 @@ async def on_reaction_add(reaction, user):
 		query_result = cursor.fetchall()
 		cursor.close()
 		for row in query_result:
-			print(row)
+			log_chan.send(row)
 			dic = dict(row)
-			print(list(row.keys()))
+			log_chan.send(list(row.keys()))
 			if int(dic["message"]) != reaction.message.id:
 				channel = client.get_channel(int(dic["channel"]))
 				msg = await channel.fetch_message(int(dic["message"]))
 				await msg.add_reaction(reaction.emoji)
-				print(f"{reaction.message.id}と連動した{msg.id}に追加")
+				log_chan.send(f"{reaction.message.id}と連動した{msg.id}に追加")
 	except Exception as e:  # work on python 3.x
-		print(
+		log_chan.send(
 			"エラー {}".format(
 				str(e)
 			)
 		)
-		print(traceback.format_exc())
+		log_chan.send(traceback.format_exc())
 
 @client.event
 async def on_reaction_remove(reaction, user):
@@ -223,26 +224,28 @@ async def on_reaction_remove(reaction, user):
 		query_result = cursor.fetchall()
 		cursor.close()
 		for row in query_result:
-			print(row)
+			log_chan.send(row)
 			dic = dict(row)
-			print(list(row.keys()))
+			log_chan.send(list(row.keys()))
 			if int(dic["message"]) != reaction.message.id:
 				channel = client.get_channel(int(dic["channel"]))
 				msg = await channel.fetch_message(int(dic["message"]))
 				await msg.remove_reaction(reaction.emoji)
-				print(f"{reaction.message.id}と連動した{msg.id}に追加")
+				log_chan.send(f"{reaction.message.id}と連動した{msg.id}に追加")
 	except Exception as e:  # work on python 3.x
-		print(
+		log_chan.send(
 			"エラー {}".format(
 				str(e)
 			)
 		)
-		print(traceback.format_exc())
+		log_chan.send(traceback.format_exc())
 
 # 起動時に動作する処理
 @client.event
 async def on_ready():
-	print("Ready!")
+	log_chan.send("Ready!")
+	global log_chan
+	log_chan = client.get_channel(1189124177689591860)
 	reloadPresence.start()
 
 
