@@ -145,9 +145,11 @@ async def on_message(message):
 					if message.attachments != []:  # 添付ファイルが存在するとき
 						for tenpura in message.attachments:  # 全ての添付ファイルをループ
 							embed2 = discord.Embed(
-								url="https://neko-owo-globalchat-bot.nennneko5787.repl.co/?id={}".format(
-									message.id
-								)
+								url="https://owo-neko-globalchat-bot.onrender.com/?message={}&channel={}&guild={}".format(
+									message.id,
+									message.channel.id,
+									message.guild.id
+								),
 							)  # 埋め込みの説明
 							embed2.set_image(url=tenpura)
 							embeds.append(embed2)
@@ -157,9 +159,11 @@ async def on_message(message):
 					if message.stickers != []:  # スタンプが存在するとき
 						for tenpura in message.stickers:  # 全てのスタンプをループ
 							embed2 = discord.Embed(
-								url="https://neko-owo-globalchat-bot.nennneko5787.repl.co/?id={}".format(
-									message.id
-								)
+								url="https://owo-neko-globalchat-bot.onrender.com/?message={}&channel={}&guild={}".format(
+									message.id,
+									message.channel.id,
+									message.guild.id
+								),
 							)  # 埋め込みの説明
 							embed2.set_image(url=tenpura.url)
 							embeds.append(embed2)
@@ -190,19 +194,20 @@ async def on_message(message):
 		await message.remove_reaction("✅", client.user)
 
 @client.event
-async def on_raw_reaction_add(payload):
+async def on_reaction_add(reaction, user):
 	try:
-		cursor.execute("SELECT * FROM message WHERE raw_message = {}".format(sql.Identifier(payload.message_id)))
+		cursor.execute("SELECT * FROM message WHERE raw_message = {}".format(sql.Identifier(reaction.message.id)))
 		query_result = cursor.fetchall()
 		cursor.close()
 		for row in query_result:
+			print(row)
 			dic = dict(row)
-			if dic["message"] != payload.message_id:
-				channel = client.get_channel(dic["channel"])
-				if channel.guild.id == dic["guild"]:
-					msg = await channel.fetch_message(dic["message"])
-					await msg.add_reaction(payload.emoji)
-					print(f"{payload.message_id}と連動した{msg.id}に追加")
+			print(list(row.keys()))
+			if int(dic["message"]) != reaction.message.id:
+				channel = client.get_channel(int(dic["channel"]))
+				msg = await channel.fetch_message(int(dic["message"]))
+				await msg.add_reaction(reaction.emoji)
+				print(f"{reaction.message.id}と連動した{msg.id}に追加")
 	except Exception as e:  # work on python 3.x
 		print(
 			"エラー {}".format(
@@ -212,19 +217,20 @@ async def on_raw_reaction_add(payload):
 		print(traceback.format_exc())
 
 @client.event
-async def on_raw_reaction_remove(payload):
+async def on_reaction_remove(reaction, user):
 	try:
-		cursor.execute("SELECT * FROM message WHERE raw_message = {}".format(sql.Identifier(payload.message_id)))
+		cursor.execute("SELECT * FROM message WHERE raw_message = {}".format(sql.Identifier(reaction.message.id)))
 		query_result = cursor.fetchall()
 		cursor.close()
 		for row in query_result:
+			print(row)
 			dic = dict(row)
-			if dic["message"] != payload.message_id:
-				channel = client.get_channel(dic["channel"])
-				if channel.guild.id == dic["guild"]:
-					msg = await channel.fetch_message(dic["message"])
-					await msg.remove_reaction(payload.emoji, channel.guild.me)
-					print(f"{payload.message_id}と連動した{msg.id}から削除")
+			print(list(row.keys()))
+			if int(dic["message"]) != reaction.message.id:
+				channel = client.get_channel(int(dic["channel"]))
+				msg = await channel.fetch_message(int(dic["message"]))
+				await msg.remove_reaction(reaction.emoji)
+				print(f"{reaction.message.id}と連動した{msg.id}に追加")
 	except Exception as e:  # work on python 3.x
 		print(
 			"エラー {}".format(
