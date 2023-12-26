@@ -21,8 +21,6 @@ connection = psycopg2.connect(
 		os.getenv("db_pass"),
 	)
 )
-# カーソルをオープンします
-cursor = connection.cursor()
 
 global_channel_name = "neko-global-chat"  # 設定したいチャンネル名を入力
 intents = discord.Intents.default()
@@ -41,6 +39,8 @@ async def on_guild_join(guild):
 
 @client.event
 async def on_message(message):
+	# カーソルをオープンします
+	cursor = connection.cursor()
 	if message.channel.name == global_channel_name:  # グローバルチャットにメッセージが来たとき
 		# メッセージ受信部
 		if message.author.bot:  # BOTの場合は何もせず終了
@@ -196,7 +196,8 @@ async def on_message(message):
 
 @client.event
 async def on_reaction_add(reaction, user):
-	global cursor
+	# カーソルをオープンします
+	cursor = connection.cursor()
 	if user != reaction.message.guild.me:
 		try:
 			cursor.execute("SELECT * FROM message WHERE message = %s",(reaction.message.id,))
@@ -230,7 +231,8 @@ async def on_reaction_add(reaction, user):
 
 @client.event
 async def on_reaction_remove(reaction, user):
-	global cursor
+	# カーソルをオープンします
+	cursor = connection.cursor()
 	if user != reaction.message.guild.me:
 		try:
 			cursor.execute("SELECT * FROM message WHERE message = %s",(reaction.message.id,))
