@@ -198,7 +198,7 @@ async def on_message(message):
 async def on_reaction_add(reaction, user):
 	if user != reaction.guild.me:
 		try:
-			cursor.execute("SELECT * FROM message WHERE raw_message = {}".format(sql.Identifier(reaction.message.id)))
+			cursor.execute("SELECT * FROM message WHERE raw_message = %s",reaction.message.id)
 			query_result = cursor.fetchall()
 			cursor.close()
 			for row in query_result:
@@ -222,7 +222,7 @@ async def on_reaction_add(reaction, user):
 async def on_reaction_remove(reaction, user):
 	if user != reaction.guild.me:
 		try:
-			cursor.execute("SELECT * FROM message WHERE raw_message = {}".format(sql.Identifier(reaction.message.id)))
+			cursor.execute("SELECT * FROM message WHERE raw_message = %s",reaction.message.id)
 			query_result = cursor.fetchall()
 			cursor.close()
 			for row in query_result:
