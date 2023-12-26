@@ -243,9 +243,9 @@ async def on_reaction_remove(reaction, user):
 # 起動時に動作する処理
 @client.event
 async def on_ready():
-	log_chan.send("Ready!")
 	global log_chan
 	log_chan = client.get_channel(1189124177689591860)
+	log_chan.send("Ready!")
 	reloadPresence.start()
 
 
