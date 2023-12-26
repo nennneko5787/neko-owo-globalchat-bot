@@ -198,7 +198,7 @@ async def on_message(message):
 async def on_reaction_add(reaction, user):
 	if user != reaction.message.guild.me:
 		try:
-			cursor.execute("SELECT * FROM message WHERE message = %s",reaction.message.id)
+			cursor.execute("SELECT * FROM message WHERE message = %s",(reaction.message.id,))
 			query_result = cursor.fetchall()
 			cursor.close()
 
@@ -212,9 +212,9 @@ async def on_reaction_add(reaction, user):
 				await log_chan.send(row)
 				dic = dict(row)
 				await log_chan.send(list(row.keys()))
-				if dic["message"] != reaction.message.id:
-					channel = client.get_channel(dic["channel"])
-					msg = await channel.fetch_message(dic["message"])
+				if int(dic["message"]) != reaction.message.id:
+					channel = client.get_channel(int(dic["channel"]))
+					msg = await channel.fetch_message(int(dic["message"]))
 					await msg.add_reaction(reaction.emoji)
 					await log_chan.send(f"{reaction.message.id}と連動した{msg.id}に追加")
 		except Exception as e:  # work on python 3.x
@@ -229,7 +229,7 @@ async def on_reaction_add(reaction, user):
 async def on_reaction_remove(reaction, user):
 	if user != reaction.message.guild.me:
 		try:
-			cursor.execute("SELECT * FROM message WHERE message = %s",reaction.message.id)
+			cursor.execute("SELECT * FROM message WHERE message = %s",(reaction.message.id,))
 			query_result = cursor.fetchall()
 			cursor.close()
 
@@ -243,9 +243,9 @@ async def on_reaction_remove(reaction, user):
 				await log_chan.send(row)
 				dic = dict(row)
 				await log_chan.send(list(row.keys()))
-				if dic["message"] != reaction.message.id:
-					channel = client.get_channel(dic["channel"])
-					msg = await channel.fetch_message(dic["message"])
+				if int(dic["message"]) != reaction.message.id:
+					channel = client.get_channel(int(dic["channel"]))
+					msg = await channel.fetch_message(int(dic["message"]))
 					await msg.remove_reaction(reaction.emoji)
 					await log_chan.send(f"{reaction.message.id}と連動した{msg.id}に追加")
 		except Exception as e:  # work on python 3.x
