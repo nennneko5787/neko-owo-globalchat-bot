@@ -196,49 +196,51 @@ async def on_message(message):
 
 @client.event
 async def on_reaction_add(reaction, user):
-	try:
-		cursor.execute("SELECT * FROM message WHERE raw_message = {}".format(sql.Identifier(reaction.message.id)))
-		query_result = cursor.fetchall()
-		cursor.close()
-		for row in query_result:
-			await log_chan.send(row)
-			dic = dict(row)
-			await log_chan.send(list(row.keys()))
-			if int(dic["message"]) != reaction.message.id:
-				channel = client.get_channel(int(dic["channel"]))
-				msg = await channel.fetch_message(int(dic["message"]))
-				await msg.add_reaction(reaction.emoji)
-				await log_chan.send(f"{reaction.message.id}と連動した{msg.id}に追加")
-	except Exception as e:  # work on python 3.x
-		await log_chan.send(
-			"エラー {}".format(
-				str(e)
+	if user != reaction.guild.me:
+		try:
+			cursor.execute("SELECT * FROM message WHERE raw_message = {}".format(sql.Identifier(reaction.message.id)))
+			query_result = cursor.fetchall()
+			cursor.close()
+			for row in query_result:
+				await log_chan.send(row)
+				dic = dict(row)
+				await log_chan.send(list(row.keys()))
+				if int(dic["message"]) != reaction.message.id:
+					channel = client.get_channel(int(dic["channel"]))
+					msg = await channel.fetch_message(int(dic["message"]))
+					await msg.add_reaction(reaction.emoji)
+					await log_chan.send(f"{reaction.message.id}と連動した{msg.id}に追加")
+		except Exception as e:  # work on python 3.x
+			await log_chan.send(
+				"エラー {}".format(
+					str(e)
+				)
 			)
-		)
-		await log_chan.send(traceback.format_exc())
+			await log_chan.send(traceback.format_exc())
 
 @client.event
 async def on_reaction_remove(reaction, user):
-	try:
-		cursor.execute("SELECT * FROM message WHERE raw_message = {}".format(sql.Identifier(reaction.message.id)))
-		query_result = cursor.fetchall()
-		cursor.close()
-		for row in query_result:
-			await log_chan.send(row)
-			dic = dict(row)
-			await log_chan.send(list(row.keys()))
-			if int(dic["message"]) != reaction.message.id:
-				channel = client.get_channel(int(dic["channel"]))
-				msg = await channel.fetch_message(int(dic["message"]))
-				await msg.remove_reaction(reaction.emoji)
-				await log_chan.send(f"{reaction.message.id}と連動した{msg.id}に追加")
-	except Exception as e:  # work on python 3.x
-		await log_chan.send(
-			"エラー {}".format(
-				str(e)
+	if user != reaction.guild.me:
+		try:
+			cursor.execute("SELECT * FROM message WHERE raw_message = {}".format(sql.Identifier(reaction.message.id)))
+			query_result = cursor.fetchall()
+			cursor.close()
+			for row in query_result:
+				await log_chan.send(row)
+				dic = dict(row)
+				await log_chan.send(list(row.keys()))
+				if int(dic["message"]) != reaction.message.id:
+					channel = client.get_channel(int(dic["channel"]))
+					msg = await channel.fetch_message(int(dic["message"]))
+					await msg.remove_reaction(reaction.emoji)
+					await log_chan.send(f"{reaction.message.id}と連動した{msg.id}に追加")
+		except Exception as e:  # work on python 3.x
+			await log_chan.send(
+				"エラー {}".format(
+					str(e)
+				)
 			)
-		)
-		await log_chan.send(traceback.format_exc())
+			await log_chan.send(traceback.format_exc())
 
 # 起動時に動作する処理
 @client.event
