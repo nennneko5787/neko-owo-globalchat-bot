@@ -205,6 +205,7 @@ async def on_reaction_add(reaction, user):
 			cursor.close()
 			cursor = connection.cursor()
 
+			log_chan.send(str(query_result))
 			dat = dict(query_result)
 
 			cursor.execute("SELECT * FROM message WHERE raw_message = %s",dat["raw_message"])
@@ -240,6 +241,7 @@ async def on_reaction_remove(reaction, user):
 			cursor.close()
 			cursor = connection.cursor()
 
+			log_chan.send(str(query_result))
 			dat = dict(query_result)
 
 			cursor.execute("SELECT * FROM message WHERE raw_message = %s",dat["raw_message"])
