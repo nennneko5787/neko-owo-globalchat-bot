@@ -196,6 +196,7 @@ async def on_message(message):
 
 @client.event
 async def on_reaction_add(reaction, user):
+	global cursor
 	if user != reaction.message.guild.me:
 		try:
 			cursor.execute("SELECT * FROM message WHERE message = %s",(reaction.message.id,))
@@ -229,6 +230,7 @@ async def on_reaction_add(reaction, user):
 
 @client.event
 async def on_reaction_remove(reaction, user):
+	global cursor
 	if user != reaction.message.guild.me:
 		try:
 			cursor.execute("SELECT * FROM message WHERE message = %s",(reaction.message.id,))
