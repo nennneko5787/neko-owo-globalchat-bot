@@ -198,9 +198,16 @@ async def on_message(message):
 async def on_reaction_add(reaction, user):
 	if user != reaction.message.guild.me:
 		try:
-			cursor.execute("SELECT * FROM message WHERE raw_message = %s",reaction.message.id)
+			cursor.execute("SELECT * FROM message WHERE message = %s",reaction.message.id)
 			query_result = cursor.fetchall()
 			cursor.close()
+
+			dat = dict(query_result[0])
+
+			cursor.execute("SELECT * FROM message WHERE raw_message = %s",dat["raw_message"])
+			query_result = cursor.fetchall()
+			cursor.close()
+
 			for row in query_result:
 				await log_chan.send(row)
 				dic = dict(row)
@@ -222,9 +229,16 @@ async def on_reaction_add(reaction, user):
 async def on_reaction_remove(reaction, user):
 	if user != reaction.message.guild.me:
 		try:
-			cursor.execute("SELECT * FROM message WHERE raw_message = %s",reaction.message.id)
+			cursor.execute("SELECT * FROM message WHERE message = %s",reaction.message.id)
 			query_result = cursor.fetchall()
 			cursor.close()
+
+			dat = dict(query_result[0])
+
+			cursor.execute("SELECT * FROM message WHERE raw_message = %s",dat["raw_message"])
+			query_result = cursor.fetchall()
+			cursor.close()
+			
 			for row in query_result:
 				await log_chan.send(row)
 				dic = dict(row)
