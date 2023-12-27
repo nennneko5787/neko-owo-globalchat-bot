@@ -200,7 +200,8 @@ async def on_reaction_add(reaction, user):
 	cursor = connection.cursor()
 	if user != reaction.message.guild.me:
 		try:
-			cursor.execute("SELECT * FROM message WHERE message = %s",(reaction.message.id,))
+			query = (reaction.message.id,)
+			cursor.execute("SELECT * FROM message WHERE message = %s",query)
 			query_result = cursor.fetchone()
 			cursor.close()
 			cursor = connection.cursor()
@@ -208,7 +209,8 @@ async def on_reaction_add(reaction, user):
 			log_chan.send(str(query_result))
 			dat = dict(query_result)
 
-			cursor.execute("SELECT * FROM message WHERE raw_message = %s",dat["raw_message"])
+			que = (dat["raw_message"],)
+			cursor.execute("SELECT * FROM message WHERE raw_message = %s",que)
 			query_result = cursor.fetchall()
 			cursor.close()
 			cursor = connection.cursor()
@@ -236,7 +238,8 @@ async def on_reaction_remove(reaction, user):
 	cursor = connection.cursor()
 	if user != reaction.message.guild.me:
 		try:
-			cursor.execute("SELECT * FROM message WHERE message = %s",(reaction.message.id,))
+			query = (reaction.message.id,)
+			cursor.execute("SELECT * FROM message WHERE message = %s",query)
 			query_result = cursor.fetchone()
 			cursor.close()
 			cursor = connection.cursor()
@@ -244,7 +247,8 @@ async def on_reaction_remove(reaction, user):
 			log_chan.send(str(query_result))
 			dat = dict(query_result)
 
-			cursor.execute("SELECT * FROM message WHERE raw_message = %s",dat["raw_message"])
+			que = (dat["raw_message"],)
+			cursor.execute("SELECT * FROM message WHERE raw_message = %s",que)
 			query_result = cursor.fetchall()
 			cursor.close()
 			cursor = connection.cursor()
