@@ -8,9 +8,6 @@ import pytz
 import traceback
 import asyncio
 import psycopg2
-from psycopg2 import sql
-import signal
-import sys
 from psycopg2.extras import DictCursor
 
 # データベースとのコネクションを確立します。
@@ -194,26 +191,26 @@ async def on_message(message):
 		await message.add_reaction("✅")
 		await asyncio.sleep(5)
 		await message.remove_reaction("✅", client.user)
+		cursor.close()
 
 @client.event
 async def on_reaction_add(reaction, user):
 	# カーソルをオープンします
-	cursor = connection.cursor(cursor_factory=DictCursor)
+	cursor1 = connection.cursor(cursor_factory=DictCursor)
+	cursor2 = connection.cursor(cursor_factory=DictCursor)
 	if user != reaction.message.guild.me:
 		try:
 			query = (reaction.message.id,)
-			cursor.execute("SELECT * FROM message WHERE message = %s",query)
-			query_result = cursor.fetchone()
-			cursor.close()
-			cursor = connection.cursor()
+			cursor1.execute("SELECT * FROM message WHERE message = %s",query)
+			query_result = cursor1.fetchone()
+			cursor1.close()
 
 			await log_chan.send(str(query_result))
 
 			que = (query_result["raw_message"],)
-			cursor.execute("SELECT * FROM message WHERE raw_message = %s",que)
-			query_result = cursor.fetchall()
-			cursor.close()
-			cursor = connection.cursor()
+			cursor2.execute("SELECT * FROM message WHERE raw_message = %s",que)
+			query_result = cursor2.fetchall()
+			cursor2.close()
 
 			for row in query_result:
 				await log_chan.send(row)
@@ -235,22 +232,25 @@ async def on_reaction_add(reaction, user):
 @client.event
 async def on_reaction_remove(reaction, user):
 	# カーソルをオープンします
-	cursor = connection.cursor(cursor_factory=DictCursor)
+	cursor1 = connection.cursor(cursor_factory=DictCursor)
+	cursor2 = connection.cursor(cursor_factory=DictCursor)
 	if user != reaction.message.guild.me:
 		try:
 			query = (reaction.message.id,)
-			cursor.execute("SELECT * FROM message WHERE message = %s",query)
-			query_result = cursor.fetchone()
-			cursor.close()
-			cursor = connection.cursor()
+			cursor1.execute("SELECT * FROM message WHERE message = %s",query)
+			query_result = cursor1.fetchone()
+			connection.commit()
+			cursor1.close()
+			await asyncio.sleep(1)
 
 			await log_chan.send(str(query_result))
 
 			que = (query_result["raw_message"],)
-			cursor.execute("SELECT * FROM message WHERE raw_message = %s",que)
-			query_result = cursor.fetchall()
-			cursor.close()
-			cursor = connection.cursor()
+			cursor2.execute("SELECT * FROM message WHERE raw_message = %s",que)
+			query_result = cursor2.fetchall()
+			connection.commit()
+			cursor2.close()
+			await asyncio.sleep(1)
 			
 			for row in query_result:
 				await log_chan.send(row)
@@ -288,20 +288,6 @@ async def reloadPresence():
 		)
 	)
 
-def cleanup():
-	connection.close()
-
-def sig_handler(signum, frame) -> None:
-    sys.exit(1)
-
 keep_alive()
 token = os.getenv("DISCORD_TOKEN_NEKOGLOBALCHAT")  # Your TOKEN
-try:
-	client.run(token)
-	signal.signal(signal.SIGTERM, sig_handler)
-finally:
-	signal.signal(signal.SIGTERM, signal.SIG_IGN)
-	signal.signal(signal.SIGINT, signal.SIG_IGN)
-	cleanup()
-	signal.signal(signal.SIGTERM, signal.SIG_DFL)
-	signal.signal(signal.SIGINT, signal.SIG_DFL)
+client.run(token)
