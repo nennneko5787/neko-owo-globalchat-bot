@@ -74,6 +74,8 @@ async def user(interaction: Interaction, message: Message):
 	embed = discord.Embed(title="",description="",color=0xda70d6)
 	embed.set_author(name=f"{guild.name}の情報",icon_url=guild.icon.url)
 	embed.add_field(name="参加人数",value=guild.member_count)
+	true_member_count = len([m for m in guild.members if not m.bot])
+	embed.add_field(name="Botを除いた人数",value=true_member_count)
 	embed.add_field(name="サーバーの説明",value=guild.description)
 	embed.add_field(name="サーバーの作成日時",value=guild.created_at.astimezone(datetime.timezone(datetime.timedelta(hours=9))).strftime('%Y/%m/%d %H:%M:%S.%f'))
 	await interaction.followup.send("",embed=embed,ephemeral=True)
@@ -88,7 +90,8 @@ async def test_command(interaction: discord.Interaction):
 	await interaction.response.defer()
 	embed = discord.Embed(title="servers list",description="",color=0xda70d6)
 	for guild in client.guilds:
-		embed.add_field(name=f"{guild.name}({guild.member_count})",value=guild.owner.name)
+		true_member_count = len([m for m in guild.members if not m.bot])
+		embed.add_field(name=f"{guild.name}({true_member_count} / {guild.member_count})",value=guild.owner.name)
 	await interaction.followup.send("",embed=embed,ephemeral=True)
 
 
@@ -113,6 +116,17 @@ async def test_command(interaction: discord.Interaction):
 				await interaction.channel.send(f"できた: {guild.name}({guild.id})")
 			except Exception as e:
 				await interaction.channel.send(f"Error(おそらく権限が足りない): {guild.name}({guild.id})")
+				if guild.id != 861590137116819486:
+					await guild.owner.create_dm()
+					embed = discord.Embed(title="neko's global chat botについて",description="こんにちは。あなたのサーバーで、neko's global chat botが正しく導入されていないことが確認されました。\nですので、Discordサーバーにて`neko-global-chat`という名前のテキストチャンネルを作成していただければなと思います。",color=0xda70d6)
+					embed.add_field(name="正しく導入されていないことが確認できたサーバー",value=guild.name)
+					embed.set_author(name="nennneko5787",icon_url="https://i.imgur.com/zJ094I4.png")
+					await guild.owner.dm_channel.send("",embed=embed)
+					await interaction.channel.send(f"DMおくった: {guild.name}({guild.id})")
+				else:
+					await interaction.channel.send(f"ディス速のBot置き場でした: {guild.name}({guild.id})")
+		else:
+			await interaction.channel.send(f"作る必要なかった: {guild.name}({guild.id})")
 	await interaction.followup.send(f"OK, {count}")
 
 
