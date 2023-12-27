@@ -237,92 +237,84 @@ async def on_reaction_add(reaction, user):
 	cursor1 = connection.cursor(cursor_factory=DictCursor)
 	cursor2 = connection.cursor(cursor_factory=DictCursor)
 	if user != reaction.message.guild.me:
-		try:
-			query = (reaction.message.id,)
-			cursor1.execute("SELECT * FROM message WHERE message = %s",query)
-			query_result = cursor1.fetchone()
-			cursor1.close()
+		query = (reaction.message.id,)
+		cursor1.execute("SELECT * FROM message WHERE message = %s",query)
+		query_result = cursor1.fetchone()
+		cursor1.close()
 
-			que = (query_result["raw_message"],)
-			cursor2.execute("SELECT * FROM message WHERE raw_message = %s",que)
-			query_result = cursor2.fetchall()
-			cursor2.close()
+		que = (query_result["raw_message"],)
+		cursor2.execute("SELECT * FROM message WHERE raw_message = %s",que)
+		query_result = cursor2.fetchall()
+		cursor2.close()
 
-			for dic in query_result:
-				if int(dic["message"]) != reaction.message.id:
-					channel = client.get_channel(int(dic["channel"]))
-					msg = await channel.fetch_message(int(dic["message"]))
-					await msg.add_reaction(reaction.emoji)
+		for dic in query_result:
+			if int(dic["message"]) != reaction.message.id:
+				channel = client.get_channel(int(dic["channel"]))
+				msg = await channel.fetch_message(int(dic["message"]))
+				await msg.add_reaction(reaction.emoji)
 
-					await channel.typing()
-					reference_content = ""
-					for (
-						string
-					) in (
-						reaction.message.contents.splitlines()
-					):  # 埋め込みのメッセージを行で分割してループ
-						reference_content += (
-							"> " + string + "\n"
-						)  # 各行の先頭に`> `をつけて結合
-					embed = discord.Embed(
-						description=f"{reaction.emoji} とリアクションしました！",
-						color=user.colour,
-					)  # 埋め込みの説明に、メッセージを挿入し、埋め込みのカラーを紫`#9B95C9`に設定
-					if (user.id == 1048448686914551879) or (
-						user.id == 1026050624556638208
-					):
-						isAdmin = "🛠️"
-					else:
-						isAdmin = ""
-					if user.discriminator != "0":
-						name = "{}#{}".format(
-							user.name, user.discriminator
-						)
-					else:
-						name = "{}".format(user.name)
-
-					if user.display_name is not name:
-						embed.set_author(
-							name="{}({}) {}".format(
-								user.display_name, name, isAdmin
-							),
-							icon_url=user.display_avatar.url,
-						)
-					else:
-						embed.set_author(
-							name="{} {}".format(name, isAdmin),
-							icon_url=user.display_avatar.url,
-						)
-
-					reference_value = "**@{}**\n{}".format(
-						embed.author.name, reference_content
-					)  # 返信メッセージを生成
-
-					embed.add_field(
-						name="内容", value=reference_value, inline=True
-					)  # 埋め込みに返信メッセージを追加
-
-					jst_datetime = datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=9)))
-					embed.set_footer(
-						text="{} | {}".format(
-							user.guild.name,
-							jst_datetime.strftime("%Y/%m/%d %H:%M:%S.%f")
-						),
-						icon_url=user.guild.icon,
+				await channel.typing()
+				embed = discord.Embed(
+					description=f"{reaction.emoji} とリアクションしました！",
+					color=user.colour,
+				)  # 埋め込みの説明に、メッセージを挿入し、埋め込みのカラーを紫`#9B95C9`に設定
+				if (user.id == 1048448686914551879) or (
+					user.id == 1026050624556638208
+				):
+					isAdmin = "🛠️"
+				else:
+					isAdmin = ""
+				if user.discriminator != "0":
+					name = "{}#{}".format(
+						user.name, user.discriminator
 					)
-					if (
-						channel.permissions_for(channel.guild.me).send_messages
-						is True
-					):
-						await channel.send(embed=embed)  # メッセージを送信
+				else:
+					name = "{}".format(user.name)
 
+				if user.display_name is not name:
+					embed.set_author(
+						name="{}({}) {}".format(
+							user.display_name, name, isAdmin
+						),
+						icon_url=user.display_avatar.url,
+					)
+				else:
+					embed.set_author(
+						name="{} {}".format(name, isAdmin),
+						icon_url=user.display_avatar.url,
+					)
 
-		except Exception as e:  # work on python 3.x
-			print(
-				"エラー {}".format(
-					str(e)
+				reference_content = ""
+				for (
+					string
+				) in (
+					reaction.message.contents.splitlines()
+				):  # 埋め込みのメッセージを行で分割してループ
+					reference_content += (
+						"> " + string + "\n"
+					)  # 各行の先頭に`> `をつけて結合
+
+				reference_value = "**@{}**\n{}".format(
+					embed.author.name, reference_content
+				)  # 返信メッセージを生成
+
+				embed.add_field(
+					name="内容", value=reference_value, inline=True
+				)  # 埋め込みに返信メッセージを追加
+
+				jst_datetime = datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=9)))
+				embed.set_footer(
+					text="{} | {}".format(
+						user.guild.name,
+						jst_datetime.strftime("%Y/%m/%d %H:%M:%S.%f")
+					),
+					icon_url=user.guild.icon,
 				)
-			)
+				if (
+					channel.permissions_for(channel.guild.me).send_messages
+					is True
+				):
+					await channel.send(embed=embed)  # メッセージを送信
 
 @client.event
 async def on_reaction_remove(reaction, user):
@@ -330,96 +322,89 @@ async def on_reaction_remove(reaction, user):
 	cursor1 = connection.cursor(cursor_factory=DictCursor)
 	cursor2 = connection.cursor(cursor_factory=DictCursor)
 	if user != reaction.message.guild.me:
-		try:
-			query = (reaction.message.id,)
-			cursor1.execute("SELECT * FROM message WHERE message = %s",query)
-			query_result = cursor1.fetchone()
-			connection.commit()
-			cursor1.close()
+		query = (reaction.message.id,)
+		cursor1.execute("SELECT * FROM message WHERE message = %s",query)
+		query_result = cursor1.fetchone()
+		connection.commit()
+		cursor1.close()
 
-			que = (query_result["raw_message"],)
-			cursor2.execute("SELECT * FROM message WHERE raw_message = %s",que)
-			query_result = cursor2.fetchall()
-			connection.commit()
-			cursor2.close()
-			
-			for dic in query_result:
-				if int(dic["message"]) != reaction.message.id:
-					channel = client.get_channel(int(dic["channel"]))
-					msg = await channel.fetch_message(int(dic["message"]))
-					await msg.remove_reaction(reaction.emoji)
+		que = (query_result["raw_message"],)
+		cursor2.execute("SELECT * FROM message WHERE raw_message = %s",que)
+		query_result = cursor2.fetchall()
+		connection.commit()
+		cursor2.close()
+		
+		for dic in query_result:
+			if int(dic["message"]) != reaction.message.id:
+				channel = client.get_channel(int(dic["channel"]))
+				msg = await channel.fetch_message(int(dic["message"]))
+				await msg.remove_reaction(reaction.emoji)
 
-					await channel.typing()
-					reference_content = ""
-					for (
-						string
-					) in (
-						reaction.message.contents.splitlines()
-					):  # 埋め込みのメッセージを行で分割してループ
-						reference_content += (
-							"> " + string + "\n"
-						)  # 各行の先頭に`> `をつけて結合
-					embed = discord.Embed(
-						description=f"{reaction.emoji} のリアクションを取り消しました...",
-						color=user.colour,
-					)  # 埋め込みの説明に、メッセージを挿入し、埋め込みのカラーを紫`#9B95C9`に設定
-					embed.add_field(
-						name="返信しました", value=reference_value, inline=True
-					)  # 埋め込みに返信メッセージを追加
-					if (user.id == 1048448686914551879) or (
-						user.id == 1026050624556638208
-					):
-						isAdmin = "🛠️"
-					else:
-						isAdmin = ""
-					if user.discriminator != "0":
-						name = "{}#{}".format(
-							user.name, user.discriminator
-						)
-					else:
-						name = "{}".format(user.name)
-
-					if user.display_name is not name:
-						embed.set_author(
-							name="{}({}) {}".format(
-								user.display_name, name, isAdmin
-							),
-							icon_url=user.display_avatar.url,
-						)
-					else:
-						embed.set_author(
-							name="{} {}".format(name, isAdmin),
-							icon_url=user.display_avatar.url,
-						)
-
-					reference_value = "**@{}**\n{}".format(
-						embed.author.name, reference_content
-					)  # 返信メッセージを生成
-
-					embed.add_field(
-						name="内容", value=reference_value, inline=True
-					)  # 埋め込みに返信メッセージを追加
-
-					jst_datetime = datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=9)))
-					embed.set_footer(
-						text="{} | {}".format(
-							user.guild.name,
-							jst_datetime.strftime("%Y/%m/%d %H:%M:%S.%f")
-						),
-						icon_url=user.guild.icon,
+				await channel.typing()
+				embed = discord.Embed(
+					description=f"{reaction.emoji} のリアクションを取り消しました...",
+					color=user.colour,
+				)  # 埋め込みの説明に、メッセージを挿入し、埋め込みのカラーを紫`#9B95C9`に設定
+				embed.add_field(
+					name="返信しました", value=reference_value, inline=True
+				)  # 埋め込みに返信メッセージを追加
+				if (user.id == 1048448686914551879) or (
+					user.id == 1026050624556638208
+				):
+					isAdmin = "🛠️"
+				else:
+					isAdmin = ""
+				if user.discriminator != "0":
+					name = "{}#{}".format(
+						user.name, user.discriminator
 					)
-					if (
-						channel.permissions_for(channel.guild.me).send_messages
-						is True
-					):
-						await channel.send(embed=embed)  # メッセージを送信
+				else:
+					name = "{}".format(user.name)
 
-		except Exception as e:  # work on python 3.x
-			print(
-				"エラー {}".format(
-					str(e)
+				if user.display_name is not name:
+					embed.set_author(
+						name="{}({}) {}".format(
+							user.display_name, name, isAdmin
+						),
+						icon_url=user.display_avatar.url,
+					)
+				else:
+					embed.set_author(
+						name="{} {}".format(name, isAdmin),
+						icon_url=user.display_avatar.url,
+					)
+
+				reference_content = ""
+				for (
+					string
+				) in (
+					reaction.message.contents.splitlines()
+				):  # 埋め込みのメッセージを行で分割してループ
+					reference_content += (
+						"> " + string + "\n"
+					)  # 各行の先頭に`> `をつけて結合
+
+				reference_value = "**@{}**\n{}".format(
+					embed.author.name, reference_content
+				)  # 返信メッセージを生成
+
+				embed.add_field(
+					name="内容", value=reference_value, inline=True
+				)  # 埋め込みに返信メッセージを追加
+
+				jst_datetime = datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=9)))
+				embed.set_footer(
+					text="{} | {}".format(
+						user.guild.name,
+						jst_datetime.strftime("%Y/%m/%d %H:%M:%S.%f")
+					),
+					icon_url=user.guild.icon,
 				)
-			)
+				if (
+					channel.permissions_for(channel.guild.me).send_messages
+					is True
+				):
+					await channel.send(embed=embed)  # メッセージを送信
 
 # 起動時に動作する処理
 @client.event
