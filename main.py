@@ -2,6 +2,7 @@
 # https://discord.com/api/oauth2/authorize?client_id=1051683005472702465&permissions=8&scope=bot
 import os
 import discord
+from discord import Interaction, Message
 from server import keep_alive
 from discord.ext import tasks
 import asyncio
@@ -27,12 +28,53 @@ intents = discord.Intents.default()
 intents.message_content = True
 intents.guilds = True
 intents.reactions = True
+intents.members = True
 
 client = discord.Client(intents=intents)  # 接続に必要なオブジェクトを生成
+tree = discord.app_commands.CommandTree(client) #←ココ
 
 @client.event
 async def on_guild_join(guild):
 	await guild.create_text_channel("neko-global-chat")
+
+@tree.context_menu(name="ユーザー情報を取得")
+async def user(interaction: Interaction, message: Message):
+	await interaction.response.defer()
+	# カーソルをオープンします
+	cursor = connection.cursor(cursor_factory=DictCursor)
+	query = (message.id,)
+	cursor.execute("SELECT * FROM message WHERE message = %s",query)
+	query_result = cursor.fetchone()
+	cursor.close()
+	channel = client.get_channel(int(query_result["channel"]))
+	msg = await channel.fetch_message(int(query_result["message"]))
+	user = msg.author
+	embed = discord.Embed(title="",description="",color=user.color)
+	embed.set_author(name=f"{user.name}の情報",icon_url=user.display_avatar.url)
+	embed.add_field(name="参加中のサーバー",value=user.guild.name)
+	embed.add_field(name="このサーバーに参加した日時",value=user.joined_at.astimezone(datetime.timezone(datetime.timedelta(hours=9))).strftime('%Y/%m/%d %H:%M:%S.%f'))
+	embed.add_field(name="Discordに登録した日時",value=user.created_at.astimezone(datetime.timezone(datetime.timedelta(hours=9))).strftime('%Y/%m/%d %H:%M:%S.%f'))
+	await interaction.followup.send("",embed=embed,ephemeral=True)
+
+
+@tree.context_menu(name="サーバー情報を取得")
+async def user(interaction: Interaction, message: Message):
+	await interaction.response.defer()
+	# カーソルをオープンします
+	cursor = connection.cursor(cursor_factory=DictCursor)
+	query = (message.id,)
+	cursor.execute("SELECT * FROM message WHERE message = %s",query)
+	query_result = cursor.fetchone()
+	cursor.close()
+	channel = client.get_channel(int(query_result["channel"]))
+	msg = await channel.fetch_message(int(query_result["message"]))
+	guild = msg.guild
+	embed = discord.Embed(title="",description="",color=0xda70d6)
+	embed.set_author(name=f"{guild.name}の情報",icon_url=guild.icon.url)
+	embed.add_field(name="参加人数",value=guild.member_count)
+	embed.add_field(name="サーバーの説明",value=guild.description)
+	embed.add_field(name="サーバーの作成日時",value=guild.created_at.astimezone(datetime.timezone(datetime.timedelta(hours=9))).strftime('%Y/%m/%d %H:%M:%S.%f'))
+	await interaction.followup.send("",embed=embed,ephemeral=True)
 
 
 @client.event
@@ -80,21 +122,19 @@ async def on_message(message):
 							name="{}({}) {}".format(
 								message.author.display_name, name, isAdmin
 							),
-							icon_url=message.author.avatar,
+							icon_url=message.author.display_avatar.url,
 						)
 					else:
 						embed.set_author(
 							name="{} {}".format(name, isAdmin),
-							icon_url=message.author.avatar,
+							icon_url=message.author.display_avatar.url,
 						)
 
 					jst_datetime = message.created_at.astimezone(datetime.timezone(datetime.timedelta(hours=9)))
 					embed.set_footer(
-						text="{} | {} | mID:{} | guildID:{}".format(
+						text="{} | {}".format(
 							message.guild.name,
-							jst_datetime.strftime("%Y/%m/%d %H:%M:%S.%f"),
-							message.id,
-							message.guild.id,
+							jst_datetime.strftime("%Y/%m/%d %H:%M:%S.%f")
 						),
 						icon_url=message.guild.icon,
 					)
@@ -214,6 +254,52 @@ async def on_reaction_add(reaction, user):
 					msg = await channel.fetch_message(int(dic["message"]))
 					await msg.add_reaction(reaction.emoji)
 
+					await channel.typing()
+					embed = discord.Embed(
+						description=f"<:{reaction.emoji.name}:{reaction.emoji.id}> とリアクションしました！",
+						color=user.colour,
+					)  # 埋め込みの説明に、メッセージを挿入し、埋め込みのカラーを紫`#9B95C9`に設定
+					if (user.id == 1048448686914551879) or (
+						user.id == 1026050624556638208
+					):
+						isAdmin = "🛠️"
+					else:
+						isAdmin = ""
+					if user.discriminator != "0":
+						name = "{}#{}".format(
+							user.name, user.discriminator
+						)
+					else:
+						name = "{}".format(user.name)
+
+					if user.display_name is not name:
+						embed.set_author(
+							name="{}({}) {}".format(
+								user.display_name, name, isAdmin
+							),
+							icon_url=user.display_avatar.url,
+						)
+					else:
+						embed.set_author(
+							name="{} {}".format(name, isAdmin),
+							icon_url=user.display_avatar.url,
+						)
+
+					jst_datetime = datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=9)))
+					embed.set_footer(
+						text="{} | {}".format(
+							user.guild.name,
+							jst_datetime.strftime("%Y/%m/%d %H:%M:%S.%f")
+						),
+						icon_url=user.guild.icon,
+					)
+					if (
+						channel.permissions_for(channel.guild.me).send_messages
+						is True
+					):
+						await channel.send(embed=embed)  # メッセージを送信
+
+
 		except Exception as e:  # work on python 3.x
 			print(
 				"エラー {}".format(
@@ -233,20 +319,63 @@ async def on_reaction_remove(reaction, user):
 			query_result = cursor1.fetchone()
 			connection.commit()
 			cursor1.close()
-			await asyncio.sleep(1)
 
 			que = (query_result["raw_message"],)
 			cursor2.execute("SELECT * FROM message WHERE raw_message = %s",que)
 			query_result = cursor2.fetchall()
 			connection.commit()
 			cursor2.close()
-			await asyncio.sleep(1)
 			
 			for dic in query_result:
 				if int(dic["message"]) != reaction.message.id:
 					channel = client.get_channel(int(dic["channel"]))
 					msg = await channel.fetch_message(int(dic["message"]))
 					await msg.remove_reaction(reaction.emoji)
+
+					await channel.typing()
+					embed = discord.Embed(
+						description=f"<:{reaction.emoji.name}:{reaction.emoji.id}> のリアクションを取り消しました...",
+						color=user.colour,
+					)  # 埋め込みの説明に、メッセージを挿入し、埋め込みのカラーを紫`#9B95C9`に設定
+					if (user.id == 1048448686914551879) or (
+						user.id == 1026050624556638208
+					):
+						isAdmin = "🛠️"
+					else:
+						isAdmin = ""
+					if user.discriminator != "0":
+						name = "{}#{}".format(
+							user.name, user.discriminator
+						)
+					else:
+						name = "{}".format(user.name)
+
+					if user.display_name is not name:
+						embed.set_author(
+							name="{}({}) {}".format(
+								user.display_name, name, isAdmin
+							),
+							icon_url=user.display_avatar.url,
+						)
+					else:
+						embed.set_author(
+							name="{} {}".format(name, isAdmin),
+							icon_url=user.display_avatar.url,
+						)
+
+					jst_datetime = datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=9)))
+					embed.set_footer(
+						text="{} | {}".format(
+							user.guild.name,
+							jst_datetime.strftime("%Y/%m/%d %H:%M:%S.%f")
+						),
+						icon_url=user.guild.icon,
+					)
+					if (
+						channel.permissions_for(channel.guild.me).send_messages
+						is True
+					):
+						await channel.send(embed=embed)  # メッセージを送信
 
 		except Exception as e:  # work on python 3.x
 			print(
@@ -258,6 +387,7 @@ async def on_reaction_remove(reaction, user):
 # 起動時に動作する処理
 @client.event
 async def on_ready():
+	await tree.sync()
 	reloadPresence.start()
 
 
