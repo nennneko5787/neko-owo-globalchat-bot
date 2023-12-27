@@ -199,6 +199,11 @@ async def on_message(message):
 			return
 		if message.guild.id == 1136234915663466496:
 			return
+		if message.content.find("discord.gg") != -1 or message.content.find("discord.com/invite/") or message.content.find("dsc.gg"):
+			await message.author.create_dm()
+			embed = discord.Embed(title="エラーが発生しました。",description="禁止ワードが含まれています",color=discord.Colour.red())
+			await message.author.dm_channel.send("",embed=embed)
+			return
 		sql = "INSERT INTO message (message, channel, guild, raw_message, raw_channel, raw_guild) VALUES (%s, %s, %s, %s, %s, %s)"
 		cursor.execute(sql, (message.id, message.channel.id, message.guild.id, message.id, message.channel.id, message.guild.id))
 		connection.commit()
