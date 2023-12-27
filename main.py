@@ -21,7 +21,7 @@ connection = psycopg2.connect(
 )
 
 last_commit_dt = datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=9)))
-last_commit_date = last_commit_dt.strftime('%Y/%m/%d %H:%M:%S.%f')
+last_commit_date = last_commit_dt.strftime('%Y/%m/%d %H:%M:%S')
 
 global_channel_name = "neko-global-chat"  # 設定したいチャンネル名を入力
 intents = discord.Intents.default()
@@ -88,7 +88,7 @@ async def test_command(interaction: discord.Interaction):
 	await interaction.response.defer()
 	embed = discord.Embed(title="servers list",description="",color=0xda70d6)
 	for guild in client.guilds:
-		embed.add_field(name=guild.name,value=guild.owner.name)
+		embed.add_field(name=f"{guild.name}({guild.member_count})",value=guild.owner.name)
 	await interaction.followup.send("",embed=embed,ephemeral=True)
 
 
@@ -173,7 +173,7 @@ async def on_message(message):
 					embed.set_footer(
 						text="{} | {}".format(
 							message.guild.name,
-							jst_datetime.strftime("%Y/%m/%d %H:%M:%S.%f")
+							jst_datetime.strftime("%Y/%m/%d %H:%M:%S")
 						),
 						icon_url=message.guild.icon,
 					)
