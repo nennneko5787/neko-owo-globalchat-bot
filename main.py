@@ -89,30 +89,34 @@ async def user(interaction: Interaction, message: Message):
 @tree.context_menu(name="メッセージを削除(管理用)")
 async def user(interaction: Interaction, message: Message):
 	await interaction.response.defer()
-	if message.channel.name == "neko-global-chat":
-		# カーソルをオープンします
-		cursor1 = connection.cursor(cursor_factory=DictCursor)
-		cursor2 = connection.cursor(cursor_factory=DictCursor)
-		query = (message.id,)
-		cursor1.execute("SELECT * FROM message WHERE message = %s",query)
-		query_result = cursor1.fetchone()
-		cursor1.close()
+	if interaction.user.id == 1048448686914551879:
+		if message.channel.name == "neko-global-chat":
+			# カーソルをオープンします
+			cursor1 = connection.cursor(cursor_factory=DictCursor)
+			cursor2 = connection.cursor(cursor_factory=DictCursor)
+			query = (message.id,)
+			cursor1.execute("SELECT * FROM message WHERE message = %s",query)
+			query_result = cursor1.fetchone()
+			cursor1.close()
 
-		que = (query_result["raw_message"],)
-		cursor2.execute("SELECT * FROM message WHERE raw_message = %s",que)
-		query_result = cursor2.fetchall()
-		cursor2.close()
+			que = (query_result["raw_message"],)
+			cursor2.execute("SELECT * FROM message WHERE raw_message = %s",que)
+			query_result = cursor2.fetchall()
+			cursor2.close()
 
-		for dic in query_result:
-			if int(dic["message"]) != message.id:
-				channel = client.get_channel(int(dic["channel"]))
-				msg = await channel.fetch_message(int(dic["message"]))
-				await msg.delete()
-		await message.delete()
-		await interaction.followup.send("削除しました。")
+			msgid = message.id
+
+			for dic in query_result:
+				if int(dic["message"]) != msgid:
+					channel = client.get_channel(int(dic["channel"]))
+					msg = await channel.fetch_message(int(dic["message"]))
+					await msg.delete()
+			await message.delete()
+			await interaction.followup.send("削除しました。")
+		else:
+			await interaction.followup.send("そこは グローバルチャットの チャンネルでは ない！")
 	else:
-		await interaction.followup.send("そこは グローバルチャットの チャンネルでは ない！")
-
+		await interaction.followup.send("You don't have permission!",ephemeral=True)
 
 @client.event
 async def on_message_delete(message):
