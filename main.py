@@ -255,6 +255,15 @@ async def on_reaction_add(reaction, user):
 					await msg.add_reaction(reaction.emoji)
 
 					await channel.typing()
+					reference_content = ""
+					for (
+						string
+					) in (
+						reaction.message.contents.splitlines()
+					):  # 埋め込みのメッセージを行で分割してループ
+						reference_content += (
+							"> " + string + "\n"
+						)  # 各行の先頭に`> `をつけて結合
 					embed = discord.Embed(
 						description=f"{reaction.emoji} とリアクションしました！",
 						color=user.colour,
@@ -284,6 +293,14 @@ async def on_reaction_add(reaction, user):
 							name="{} {}".format(name, isAdmin),
 							icon_url=user.display_avatar.url,
 						)
+
+					reference_value = "**@{}**\n{}".format(
+						embed.author.name, reference_content
+					)  # 返信メッセージを生成
+
+					embed.add_field(
+						name="内容", value=reference_value, inline=True
+					)  # 埋め込みに返信メッセージを追加
 
 					jst_datetime = datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=9)))
 					embed.set_footer(
@@ -333,10 +350,22 @@ async def on_reaction_remove(reaction, user):
 					await msg.remove_reaction(reaction.emoji)
 
 					await channel.typing()
+					reference_content = ""
+					for (
+						string
+					) in (
+						reaction.message.contents.splitlines()
+					):  # 埋め込みのメッセージを行で分割してループ
+						reference_content += (
+							"> " + string + "\n"
+						)  # 各行の先頭に`> `をつけて結合
 					embed = discord.Embed(
 						description=f"{reaction.emoji} のリアクションを取り消しました...",
 						color=user.colour,
 					)  # 埋め込みの説明に、メッセージを挿入し、埋め込みのカラーを紫`#9B95C9`に設定
+					embed.add_field(
+						name="返信しました", value=reference_value, inline=True
+					)  # 埋め込みに返信メッセージを追加
 					if (user.id == 1048448686914551879) or (
 						user.id == 1026050624556638208
 					):
@@ -362,6 +391,14 @@ async def on_reaction_remove(reaction, user):
 							name="{} {}".format(name, isAdmin),
 							icon_url=user.display_avatar.url,
 						)
+
+					reference_value = "**@{}**\n{}".format(
+						embed.author.name, reference_content
+					)  # 返信メッセージを生成
+
+					embed.add_field(
+						name="内容", value=reference_value, inline=True
+					)  # 埋め込みに返信メッセージを追加
 
 					jst_datetime = datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=9)))
 					embed.set_footer(
