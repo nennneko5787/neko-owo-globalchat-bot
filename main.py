@@ -42,44 +42,99 @@ async def on_guild_join(guild):
 @tree.context_menu(name="ユーザー情報を取得")
 async def user(interaction: Interaction, message: Message):
 	await interaction.response.defer()
-	# カーソルをオープンします
-	cursor = connection.cursor(cursor_factory=DictCursor)
-	query = (message.id,)
-	cursor.execute("SELECT * FROM message WHERE message = %s",query)
-	query_result = cursor.fetchone()
-	cursor.close()
-	channel = client.get_channel(int(query_result["raw_channel"]))
-	msg = await channel.fetch_message(int(query_result["raw_message"]))
-	user = msg.author
-	embed = discord.Embed(title="",description="",color=user.color)
-	embed.set_author(name=f"{user.name}の情報",icon_url=user.display_avatar.url)
-	embed.add_field(name="参加中のサーバー",value=user.guild.name)
-	embed.add_field(name="このサーバーに参加した日時",value=user.joined_at.astimezone(datetime.timezone(datetime.timedelta(hours=9))).strftime('%Y/%m/%d %H:%M:%S.%f'))
-	embed.add_field(name="Discordに登録した日時",value=user.created_at.astimezone(datetime.timezone(datetime.timedelta(hours=9))).strftime('%Y/%m/%d %H:%M:%S.%f'))
-	await interaction.followup.send("",embed=embed,ephemeral=True)
+	if message.channel.name == "neko-global-chat":
+		# カーソルをオープンします
+		cursor = connection.cursor(cursor_factory=DictCursor)
+		query = (message.id,)
+		cursor.execute("SELECT * FROM message WHERE message = %s",query)
+		query_result = cursor.fetchone()
+		cursor.close()
+		channel = client.get_channel(int(query_result["raw_channel"]))
+		msg = await channel.fetch_message(int(query_result["raw_message"]))
+		user = msg.author
+		embed = discord.Embed(title="",description="",color=user.color)
+		embed.set_author(name=f"{user.name}の情報",icon_url=user.display_avatar.url)
+		embed.add_field(name="参加中のサーバー",value=user.guild.name)
+		embed.add_field(name="このサーバーに参加した日時",value=user.joined_at.astimezone(datetime.timezone(datetime.timedelta(hours=9))).strftime('%Y/%m/%d %H:%M:%S.%f'))
+		embed.add_field(name="Discordに登録した日時",value=user.created_at.astimezone(datetime.timezone(datetime.timedelta(hours=9))).strftime('%Y/%m/%d %H:%M:%S.%f'))
+		await interaction.followup.send("",embed=embed,ephemeral=True)
+	else:
+		await interaction.followup.send("そこは グローバルチャットの チャンネルでは ない！")
 
 
 @tree.context_menu(name="サーバー情報を取得")
 async def user(interaction: Interaction, message: Message):
 	await interaction.response.defer()
-	# カーソルをオープンします
-	cursor = connection.cursor(cursor_factory=DictCursor)
-	query = (message.id,)
-	cursor.execute("SELECT * FROM message WHERE message = %s",query)
-	query_result = cursor.fetchone()
-	cursor.close()
-	channel = client.get_channel(int(query_result["raw_channel"]))
-	msg = await channel.fetch_message(int(query_result["raw_message"]))
-	guild = msg.guild
-	embed = discord.Embed(title="",description="",color=0xda70d6)
-	embed.set_author(name=f"{guild.name}の情報",icon_url=guild.icon.url)
-	embed.add_field(name="参加人数",value=guild.member_count)
-	true_member_count = len([m for m in guild.members if not m.bot])
-	embed.add_field(name="Botを除いた人数",value=true_member_count)
-	embed.add_field(name="サーバーの説明",value=guild.description)
-	embed.add_field(name="サーバーの作成日時",value=guild.created_at.astimezone(datetime.timezone(datetime.timedelta(hours=9))).strftime('%Y/%m/%d %H:%M:%S.%f'))
-	await interaction.followup.send("",embed=embed,ephemeral=True)
+	if message.channel.name == "neko-global-chat":
+		# カーソルをオープンします
+		cursor = connection.cursor(cursor_factory=DictCursor)
+		query = (message.id,)
+		cursor.execute("SELECT * FROM message WHERE message = %s",query)
+		query_result = cursor.fetchone()
+		cursor.close()
+		channel = client.get_channel(int(query_result["raw_channel"]))
+		msg = await channel.fetch_message(int(query_result["raw_message"]))
+		guild = msg.guild
+		embed = discord.Embed(title="",description="",color=0xda70d6)
+		embed.set_author(name=f"{guild.name}の情報",icon_url=guild.icon.url)
+		embed.add_field(name="参加人数",value=guild.member_count)
+		true_member_count = len([m for m in guild.members if not m.bot])
+		embed.add_field(name="Botを除いた人数",value=true_member_count)
+		embed.add_field(name="サーバーの説明",value=guild.description)
+		embed.add_field(name="サーバーの作成日時",value=guild.created_at.astimezone(datetime.timezone(datetime.timedelta(hours=9))).strftime('%Y/%m/%d %H:%M:%S.%f'))
+		await interaction.followup.send("",embed=embed,ephemeral=True)
+	else:
+		await interaction.followup.send("そこは グローバルチャットの チャンネルでは ない！")
 
+@tree.context_menu(name="メッセージを削除(管理用)")
+async def user(interaction: Interaction, message: Message):
+	await interaction.response.defer()
+	if message.channel.name == "neko-global-chat":
+		# カーソルをオープンします
+		cursor1 = connection.cursor(cursor_factory=DictCursor)
+		cursor2 = connection.cursor(cursor_factory=DictCursor)
+		query = (message.id,)
+		cursor1.execute("SELECT * FROM message WHERE message = %s",query)
+		query_result = cursor1.fetchone()
+		cursor1.close()
+
+		que = (query_result["raw_message"],)
+		cursor2.execute("SELECT * FROM message WHERE raw_message = %s",que)
+		query_result = cursor2.fetchall()
+		cursor2.close()
+
+		for dic in query_result:
+			if int(dic["message"]) != message.id:
+				channel = client.get_channel(int(dic["channel"]))
+				msg = await channel.fetch_message(int(dic["message"]))
+				await msg.delete()
+		await message.delete()
+		await interaction.followup.send("削除しました。")
+	else:
+		await interaction.followup.send("そこは グローバルチャットの チャンネルでは ない！")
+
+
+@client.event
+async def on_message_delete(message):
+	if message.channel.name == "neko-global-chat":
+		# カーソルをオープンします
+		cursor1 = connection.cursor(cursor_factory=DictCursor)
+		cursor2 = connection.cursor(cursor_factory=DictCursor)
+		query = (message.id,)
+		cursor1.execute("SELECT * FROM message WHERE message = %s",query)
+		query_result = cursor1.fetchone()
+		cursor1.close()
+
+		que = (query_result["raw_message"],)
+		cursor2.execute("SELECT * FROM message WHERE raw_message = %s",que)
+		query_result = cursor2.fetchall()
+		cursor2.close()
+
+		for dic in query_result:
+			if int(dic["message"]) != message.id:
+				channel = client.get_channel(int(dic["channel"]))
+				msg = await channel.fetch_message(int(dic["message"]))
+				await msg.delete()
 
 @tree.command(name="servers",description="get servers list")
 async def test_command(interaction: discord.Interaction):
