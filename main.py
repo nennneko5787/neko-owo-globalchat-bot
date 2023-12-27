@@ -28,8 +28,6 @@ intents.reactions = True
 
 client = discord.Client(intents=intents)  # 接続に必要なオブジェクトを生成
 
-log_chan = 0
-
 @client.event
 async def on_guild_join(guild):
 	await guild.create_text_channel("neko-global-chat")
@@ -180,12 +178,11 @@ async def on_message(message):
 						cursor.execute(sql, (newmsg.id, newmsg.channel.id, newmsg.guild.id, message.id, message.channel.id, message.guild.id))
 						connection.commit()
 					except Exception as e:  # work on python 3.x
-						await log_chan.send(
+						print(
 							"サーバーID[{}]({})にて{}エラーが発生したため、処理をスキップします。".format(
 								channel.id, channel.guild.name, str(e)
 							)
 						)
-						await log_chan.send(traceback.format_exc())
 						continue
 
 		await message.add_reaction("✅")
@@ -205,29 +202,23 @@ async def on_reaction_add(reaction, user):
 			query_result = cursor1.fetchone()
 			cursor1.close()
 
-			await log_chan.send(str(query_result))
-
 			que = (query_result["raw_message"],)
 			cursor2.execute("SELECT * FROM message WHERE raw_message = %s",que)
 			query_result = cursor2.fetchall()
 			cursor2.close()
 
-			for row in query_result:
-				await log_chan.send(row)
-				dic = dict(row)
-				await log_chan.send(list(row.keys()))
+			for dic in query_result:
 				if int(dic["message"]) != reaction.message.id:
 					channel = client.get_channel(int(dic["channel"]))
 					msg = await channel.fetch_message(int(dic["message"]))
 					await msg.add_reaction(reaction.emoji)
-					await log_chan.send(f"{reaction.message.id}と連動した{msg.id}に追加")
+
 		except Exception as e:  # work on python 3.x
-			await log_chan.send(
+			print(
 				"エラー {}".format(
 					str(e)
 				)
 			)
-			await log_chan.send(traceback.format_exc())
 
 @client.event
 async def on_reaction_remove(reaction, user):
@@ -243,8 +234,6 @@ async def on_reaction_remove(reaction, user):
 			cursor1.close()
 			await asyncio.sleep(1)
 
-			await log_chan.send(str(query_result))
-
 			que = (query_result["raw_message"],)
 			cursor2.execute("SELECT * FROM message WHERE raw_message = %s",que)
 			query_result = cursor2.fetchall()
@@ -252,29 +241,22 @@ async def on_reaction_remove(reaction, user):
 			cursor2.close()
 			await asyncio.sleep(1)
 			
-			for row in query_result:
-				await log_chan.send(row)
-				dic = dict(row)
-				await log_chan.send(list(row.keys()))
+			for dic in query_result:
 				if int(dic["message"]) != reaction.message.id:
 					channel = client.get_channel(int(dic["channel"]))
 					msg = await channel.fetch_message(int(dic["message"]))
 					await msg.remove_reaction(reaction.emoji)
-					await log_chan.send(f"{reaction.message.id}と連動した{msg.id}に追加")
+
 		except Exception as e:  # work on python 3.x
-			await log_chan.send(
+			print(
 				"エラー {}".format(
 					str(e)
 				)
 			)
-			await log_chan.send(traceback.format_exc())
 
 # 起動時に動作する処理
 @client.event
 async def on_ready():
-	global log_chan
-	log_chan = client.get_channel(1189124177689591860)
-	await log_chan.send("Ready!")
 	reloadPresence.start()
 
 
