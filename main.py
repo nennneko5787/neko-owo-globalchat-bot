@@ -46,8 +46,8 @@ async def user(interaction: Interaction, message: Message):
 	cursor.execute("SELECT * FROM message WHERE message = %s",query)
 	query_result = cursor.fetchone()
 	cursor.close()
-	channel = client.get_channel(int(query_result["channel"]))
-	msg = await channel.fetch_message(int(query_result["message"]))
+	channel = client.get_channel(int(query_result["raw_channel"]))
+	msg = await channel.fetch_message(int(query_result["raw_message"]))
 	user = msg.author
 	embed = discord.Embed(title="",description="",color=user.color)
 	embed.set_author(name=f"{user.name}の情報",icon_url=user.display_avatar.url)
@@ -66,8 +66,8 @@ async def user(interaction: Interaction, message: Message):
 	cursor.execute("SELECT * FROM message WHERE message = %s",query)
 	query_result = cursor.fetchone()
 	cursor.close()
-	channel = client.get_channel(int(query_result["channel"]))
-	msg = await channel.fetch_message(int(query_result["message"]))
+	channel = client.get_channel(int(query_result["raw_channel"]))
+	msg = await channel.fetch_message(int(query_result["raw_message"]))
 	guild = msg.guild
 	embed = discord.Embed(title="",description="",color=0xda70d6)
 	embed.set_author(name=f"{guild.name}の情報",icon_url=guild.icon.url)
@@ -301,7 +301,8 @@ async def on_reaction_add(reaction, user):
 
 
 		except Exception as e:  # work on python 3.x
-			print(
+			user.create_dm()
+			user.dm_channel.send(
 				"エラー {}".format(
 					str(e)
 				)
@@ -378,7 +379,7 @@ async def on_reaction_remove(reaction, user):
 						await channel.send(embed=embed)  # メッセージを送信
 
 		except Exception as e:  # work on python 3.x
-			print(
+			user.dm_channel.send(
 				"エラー {}".format(
 					str(e)
 				)
