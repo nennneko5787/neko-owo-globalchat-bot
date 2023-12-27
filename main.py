@@ -11,6 +11,7 @@ import psycopg2
 from psycopg2 import sql
 import signal
 import sys
+from psycopg2.extras import DictCursor
 
 # データベースとのコネクションを確立します。
 connection = psycopg2.connect(
@@ -197,7 +198,7 @@ async def on_message(message):
 @client.event
 async def on_reaction_add(reaction, user):
 	# カーソルをオープンします
-	cursor = connection.cursor()
+	cursor = connection.cursor(cursor_factory=DictCursor)
 	if user != reaction.message.guild.me:
 		try:
 			query = (reaction.message.id,)
@@ -206,10 +207,9 @@ async def on_reaction_add(reaction, user):
 			cursor.close()
 			cursor = connection.cursor()
 
-			log_chan.send(str(query_result))
-			dat = dict(query_result)
+			await log_chan.send(str(query_result))
 
-			que = (dat["raw_message"],)
+			que = (query_result["raw_message"],)
 			cursor.execute("SELECT * FROM message WHERE raw_message = %s",que)
 			query_result = cursor.fetchall()
 			cursor.close()
@@ -235,7 +235,7 @@ async def on_reaction_add(reaction, user):
 @client.event
 async def on_reaction_remove(reaction, user):
 	# カーソルをオープンします
-	cursor = connection.cursor()
+	cursor = connection.cursor(cursor_factory=DictCursor)
 	if user != reaction.message.guild.me:
 		try:
 			query = (reaction.message.id,)
@@ -244,10 +244,9 @@ async def on_reaction_remove(reaction, user):
 			cursor.close()
 			cursor = connection.cursor()
 
-			log_chan.send(str(query_result))
-			dat = dict(query_result)
+			await log_chan.send(str(query_result))
 
-			que = (dat["raw_message"],)
+			que = (query_result["raw_message"],)
 			cursor.execute("SELECT * FROM message WHERE raw_message = %s",que)
 			query_result = cursor.fetchall()
 			cursor.close()
