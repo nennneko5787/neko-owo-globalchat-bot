@@ -77,6 +77,19 @@ async def user(interaction: Interaction, message: Message):
 	await interaction.followup.send("",embed=embed,ephemeral=True)
 
 
+@tree.command(name="servers",description="get servers list")
+async def test_command(interaction: discord.Interaction):
+	if interaction.user.id != 1048448686914551879:
+		await interaction.response.send_message("You don't have permission!",ephemeral=True)
+		return
+	
+	await interaction.response.defer()
+	embed = discord.Embed(title="servers list",description="",color=0xda70d6)
+	for guild in client.guilds:
+		embed.add_field(name=guild.name,value=guild.owner.name)
+	await interaction.followup.send("",embed=embed,ephemeral=True)
+
+
 @client.event
 async def on_message(message):
 	# カーソルをオープンします
