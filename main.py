@@ -199,7 +199,7 @@ async def on_message(message):
 			return
 		if message.guild.id == 1136234915663466496:
 			return
-		if message.content.find("discord.gg") != -1 or message.content.find("discord.com/invite/") or message.content.find("dsc.gg"):
+		if message.content.find("discord.gg") != -1 or message.content.find("discord.com/invite/") != -1 or message.content.find("dsc.gg") != -1:
 			await message.author.create_dm()
 			embed = discord.Embed(title="エラーが発生しました。",description="禁止ワードが含まれています",color=discord.Colour.red())
 			await message.author.dm_channel.send("",embed=embed)
