@@ -4,11 +4,10 @@ import os
 import discord
 from server import keep_alive
 from discord.ext import tasks
-import pytz
-import traceback
 import asyncio
 import psycopg2
 from psycopg2.extras import DictCursor
+import datetime
 
 # データベースとのコネクションを確立します。
 connection = psycopg2.connect(
@@ -19,6 +18,9 @@ connection = psycopg2.connect(
 		os.getenv("db_pass"),
 	)
 )
+
+last_commit_dt = datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=9)))
+last_commit_date = last_commit_dt.strftime('%Y/%m/%d %H:%M:%S.%f')
 
 global_channel_name = "neko-global-chat"  # 設定したいチャンネル名を入力
 intents = discord.Intents.default()
@@ -86,8 +88,7 @@ async def on_message(message):
 							icon_url=message.author.avatar,
 						)
 
-					jst = pytz.timezone("Japan")
-					jst_datetime = message.created_at.replace(tzinfo=jst)
+					jst_datetime = message.created_at.astimezone(datetime.timezone(datetime.timedelta(hours=9)))
 					embed.set_footer(
 						text="{} | {} | mID:{} | guildID:{}".format(
 							message.guild.name,
@@ -264,7 +265,8 @@ async def on_ready():
 async def reloadPresence():
 	await client.change_presence(
 		activity=discord.Game(
-			name="{} Servers / Program by nennneko5787 / Server by Garbage replit".format(
+			name="#neko-global-chat | deployed: {} | {} Servers".format(
+				last_commit_date,
 				len(client.guilds)
 			)
 		)
