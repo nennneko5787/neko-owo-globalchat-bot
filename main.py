@@ -35,7 +35,9 @@ tree = discord.app_commands.CommandTree(client) #←ココ
 
 @client.event
 async def on_guild_join(guild):
-	await guild.create_text_channel("neko-global-chat")
+	channel = await guild.create_text_channel("neko-global-chat")
+	embed = discord.Embed(title="neko's global chat Botを導入していただきありがとうございます。",description="早速このチャンネルで挨拶をしてみましょう！",color=0xda70d6)
+	await channel.send("",embed=embed)
 
 @tree.context_menu(name="ユーザー情報を取得")
 async def user(interaction: Interaction, message: Message):
@@ -88,6 +90,24 @@ async def test_command(interaction: discord.Interaction):
 	for guild in client.guilds:
 		embed.add_field(name=guild.name,value=guild.owner.name)
 	await interaction.followup.send("",embed=embed,ephemeral=True)
+
+
+@tree.command(name="generate",description="Loop all guilds, If #neko-global-chat channel is not found, then create #neko-global-chat channel.")
+async def test_command(interaction: discord.Interaction):
+	if interaction.user.id != 1048448686914551879:
+		await interaction.response.send_message("You don't have permission!",ephemeral=True)
+		return
+	
+	await interaction.response.defer()
+	count = 0
+	for guild in client.guilds:
+		cnl = discord.utils.get(guild.text_channels, name="neko-global-chat")
+		if cnl == None:
+			channel = await guild.create_text_channel("neko-global-chat")
+			embed = discord.Embed(title="neko's global chat Botを導入していただきありがとうございます。",description="早速このチャンネルで挨拶をしてみましょう！",color=0xda70d6)
+			await channel.send("",embed=embed)
+			count += 1
+	await interaction.followup.send(f"OK, {count}")
 
 
 @client.event
