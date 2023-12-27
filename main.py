@@ -253,6 +253,7 @@ async def on_reaction_add(reaction, user):
 				msg = await channel.fetch_message(int(dic["message"]))
 				await msg.add_reaction(reaction.emoji)
 
+				"""
 				await channel.typing()
 				embed = discord.Embed(
 					description=f"{reaction.emoji} とリアクションしました！",
@@ -315,6 +316,7 @@ async def on_reaction_add(reaction, user):
 					is True
 				):
 					await channel.send(embed=embed)  # メッセージを送信
+				"""
 
 @client.event
 async def on_reaction_remove(reaction, user):
@@ -340,6 +342,7 @@ async def on_reaction_remove(reaction, user):
 				msg = await channel.fetch_message(int(dic["message"]))
 				await msg.remove_reaction(reaction.emoji)
 
+				"""
 				await channel.typing()
 				embed = discord.Embed(
 					description=f"{reaction.emoji} のリアクションを取り消しました...",
@@ -405,6 +408,7 @@ async def on_reaction_remove(reaction, user):
 					is True
 				):
 					await channel.send(embed=embed)  # メッセージを送信
+				"""
 
 # 起動時に動作する処理
 @client.event
