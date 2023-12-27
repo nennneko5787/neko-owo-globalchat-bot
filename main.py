@@ -340,7 +340,7 @@ async def on_reaction_remove(reaction, user):
 			if int(dic["message"]) != reaction.message.id:
 				channel = client.get_channel(int(dic["channel"]))
 				msg = await channel.fetch_message(int(dic["message"]))
-				await msg.remove_reaction(reaction.emoji)
+				await msg.remove_reaction(reaction.emoji,msg.guild.me)
 
 				"""
 				await channel.typing()
