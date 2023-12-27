@@ -256,7 +256,7 @@ async def on_reaction_add(reaction, user):
 
 					await channel.typing()
 					embed = discord.Embed(
-						description=f"<:{reaction.emoji.name}:{reaction.emoji.id}> とリアクションしました！",
+						description=f"{reaction.emoji} とリアクションしました！",
 						color=user.colour,
 					)  # 埋め込みの説明に、メッセージを挿入し、埋め込みのカラーを紫`#9B95C9`に設定
 					if (user.id == 1048448686914551879) or (
@@ -301,8 +301,7 @@ async def on_reaction_add(reaction, user):
 
 
 		except Exception as e:  # work on python 3.x
-			user.create_dm()
-			user.dm_channel.send(
+			print(
 				"エラー {}".format(
 					str(e)
 				)
@@ -335,7 +334,7 @@ async def on_reaction_remove(reaction, user):
 
 					await channel.typing()
 					embed = discord.Embed(
-						description=f"<:{reaction.emoji.name}:{reaction.emoji.id}> のリアクションを取り消しました...",
+						description=f"{reaction.emoji} のリアクションを取り消しました...",
 						color=user.colour,
 					)  # 埋め込みの説明に、メッセージを挿入し、埋め込みのカラーを紫`#9B95C9`に設定
 					if (user.id == 1048448686914551879) or (
@@ -379,7 +378,7 @@ async def on_reaction_remove(reaction, user):
 						await channel.send(embed=embed)  # メッセージを送信
 
 		except Exception as e:  # work on python 3.x
-			user.dm_channel.send(
+			print(
 				"エラー {}".format(
 					str(e)
 				)
