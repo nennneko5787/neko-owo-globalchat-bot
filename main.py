@@ -101,12 +101,18 @@ async def test_command(interaction: discord.Interaction):
 	await interaction.response.defer()
 	count = 0
 	for guild in client.guilds:
+		await interaction.channel.send(f"確認中: {guild.name}({guild.id})")
 		cnl = discord.utils.get(guild.text_channels, name="neko-global-chat")
 		if cnl == None:
-			channel = await guild.create_text_channel("neko-global-chat")
-			embed = discord.Embed(title="neko's global chat Botを導入していただきありがとうございます。",description="早速このチャンネルで挨拶をしてみましょう！",color=0xda70d6)
-			await channel.send("",embed=embed)
-			count += 1
+			await interaction.channel.send(f"お: {guild.name}({guild.id})")
+			try:
+				channel = await guild.create_text_channel("neko-global-chat")
+				embed = discord.Embed(title="neko's global chat Botを導入していただきありがとうございます。",description="早速このチャンネルで挨拶をしてみましょう！",color=0xda70d6)
+				await channel.send("",embed=embed)
+				count += 1
+				await interaction.channel.send(f"できた: {guild.name}({guild.id})")
+			except Exception as e:
+				await interaction.channel.send(f"Error(おそらく権限が足りない): {guild.name}({guild.id})")
 	await interaction.followup.send(f"OK, {count}")
 
 
