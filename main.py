@@ -354,7 +354,7 @@ async def on_raw_reaction_add(payload):
 	cursor1 = connection.cursor(cursor_factory=DictCursor)
 	cursor2 = connection.cursor(cursor_factory=DictCursor)
 	ch = client.get_channel(payload.channel_id)
-	ms = ch.fetch_message(payload.message_id)
+	ms = await ch.fetch_message(payload.message_id)
 	if ms.author != ms.guild.me:
 		query = (ms.id,)
 		cursor1.execute("SELECT * FROM message WHERE message = %s",query)
@@ -443,7 +443,7 @@ async def on_raw_reaction_remove(payload):
 	cursor1 = connection.cursor(cursor_factory=DictCursor)
 	cursor2 = connection.cursor(cursor_factory=DictCursor)
 	ch = client.get_channel(payload.channel_id)
-	ms = ch.fetch_message(payload.message_id)
+	ms = await ch.fetch_message(payload.message_id)
 	if ms.author != ms.guild.me:
 		query = (ms.id,)
 		cursor1.execute("SELECT * FROM message WHERE message = %s",query)
