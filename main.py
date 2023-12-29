@@ -349,14 +349,12 @@ async def on_message(message):
 		cursor.close()
 
 @client.event
-async def on_raw_reaction_add(payload):
+async def on_reaction_add(reaction, user):
 	# カーソルをオープンします
 	cursor1 = connection.cursor(cursor_factory=DictCursor)
 	cursor2 = connection.cursor(cursor_factory=DictCursor)
-	ch = client.get_channel(payload.channel_id)
-	ms = await ch.fetch_message(payload.message_id)
-	if ms.author != ms.guild.me:
-		query = (ms.id,)
+	if user != reaction.message.guild.me:
+		query = (reaction.message.id,)
 		cursor1.execute("SELECT * FROM message WHERE message = %s",query)
 		query_result = cursor1.fetchone()
 		cursor1.close()
@@ -367,12 +365,11 @@ async def on_raw_reaction_add(payload):
 		cursor2.close()
 
 		for dic in query_result:
-			if int(dic["message"]) != ms.id:
+			if int(dic["message"]) != reaction.message.id:
 				channel = client.get_channel(int(dic["channel"]))
 				msg = await channel.fetch_message(int(dic["message"]))
-				await msg.add_reaction(payload.emoji)
+				await msg.add_reaction(reaction.emoji)
 
-				"""
 				await channel.typing()
 				embed = discord.Embed(
 					description=f"{reaction.emoji} とリアクションしました！",
@@ -435,33 +432,31 @@ async def on_raw_reaction_add(payload):
 					is True
 				):
 					await channel.send(embed=embed)  # メッセージを送信
-				"""
 
 @client.event
-async def on_raw_reaction_remove(payload):
+async def on_reaction_remove(reaction, user):
 	# カーソルをオープンします
 	cursor1 = connection.cursor(cursor_factory=DictCursor)
 	cursor2 = connection.cursor(cursor_factory=DictCursor)
-	ch = client.get_channel(payload.channel_id)
-	ms = await ch.fetch_message(payload.message_id)
-	if ms.author != ms.guild.me:
-		query = (ms.id,)
+	if user != reaction.message.guild.me:
+		query = (reaction.message.id,)
 		cursor1.execute("SELECT * FROM message WHERE message = %s",query)
 		query_result = cursor1.fetchone()
+		connection.commit()
 		cursor1.close()
 
 		que = (query_result["raw_message"],)
 		cursor2.execute("SELECT * FROM message WHERE raw_message = %s",que)
 		query_result = cursor2.fetchall()
+		connection.commit()
 		cursor2.close()
-
+		
 		for dic in query_result:
-			if int(dic["message"]) != ms.id:
+			if int(dic["message"]) != reaction.message.id:
 				channel = client.get_channel(int(dic["channel"]))
 				msg = await channel.fetch_message(int(dic["message"]))
-				await msg.remove_reaction(payload.emoji,msg.guild.me)
+				await msg.remove_reaction(reaction.emoji,msg.guild.me)
 
-				"""
 				await channel.typing()
 				embed = discord.Embed(
 					description=f"{reaction.emoji} のリアクションを取り消しました...",
@@ -527,7 +522,6 @@ async def on_raw_reaction_remove(payload):
 					is True
 				):
 					await channel.send(embed=embed)  # メッセージを送信
-				"""
 
 # 起動時に動作する処理
 @client.event
