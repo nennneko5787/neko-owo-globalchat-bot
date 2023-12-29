@@ -405,7 +405,7 @@ async def on_reaction_add(reaction, user):
 				for (
 					string
 				) in (
-					reaction.message.contents.splitlines()
+					reaction.message.content.splitlines()
 				):  # 埋め込みのメッセージを行で分割してループ
 					reference_content += (
 						"> " + string + "\n"
@@ -495,7 +495,7 @@ async def on_reaction_remove(reaction, user):
 				for (
 					string
 				) in (
-					reaction.message.contents.splitlines()
+					reaction.message.content.splitlines()
 				):  # 埋め込みのメッセージを行で分割してループ
 					reference_content += (
 						"> " + string + "\n"
