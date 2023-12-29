@@ -349,12 +349,14 @@ async def on_message(message):
 		cursor.close()
 
 @client.event
-async def on_reaction_add(reaction, user):
+async def on_raw_reaction_add(payload):
 	# カーソルをオープンします
 	cursor1 = connection.cursor(cursor_factory=DictCursor)
 	cursor2 = connection.cursor(cursor_factory=DictCursor)
-	if user != reaction.message.guild.me:
-		query = (reaction.message.id,)
+	ch = client.get_channel(payload.channel_id)
+	message = ch.fetch_message(payload.message_id)
+	if user != message.guild.me:
+		query = (message.id,)
 		cursor1.execute("SELECT * FROM message WHERE message = %s",query)
 		query_result = cursor1.fetchone()
 		cursor1.close()
@@ -365,10 +367,10 @@ async def on_reaction_add(reaction, user):
 		cursor2.close()
 
 		for dic in query_result:
-			if int(dic["message"]) != reaction.message.id:
+			if int(dic["message"]) != message.id:
 				channel = client.get_channel(int(dic["channel"]))
 				msg = await channel.fetch_message(int(dic["message"]))
-				await msg.add_reaction(reaction.emoji)
+				await msg.add_reaction(payload.emoji)
 
 				"""
 				await channel.typing()
@@ -436,28 +438,28 @@ async def on_reaction_add(reaction, user):
 				"""
 
 @client.event
-async def on_reaction_remove(reaction, user):
+async def on_raw_reaction_remove(payload):
 	# カーソルをオープンします
 	cursor1 = connection.cursor(cursor_factory=DictCursor)
 	cursor2 = connection.cursor(cursor_factory=DictCursor)
-	if user != reaction.message.guild.me:
-		query = (reaction.message.id,)
+	ch = client.get_channel(payload.channel_id)
+	message = ch.fetch_message(payload.message_id)
+	if user != message.guild.me:
+		query = (message.id,)
 		cursor1.execute("SELECT * FROM message WHERE message = %s",query)
 		query_result = cursor1.fetchone()
-		connection.commit()
 		cursor1.close()
 
 		que = (query_result["raw_message"],)
 		cursor2.execute("SELECT * FROM message WHERE raw_message = %s",que)
 		query_result = cursor2.fetchall()
-		connection.commit()
 		cursor2.close()
-		
+
 		for dic in query_result:
-			if int(dic["message"]) != reaction.message.id:
+			if int(dic["message"]) != message.id:
 				channel = client.get_channel(int(dic["channel"]))
 				msg = await channel.fetch_message(int(dic["message"]))
-				await msg.remove_reaction(reaction.emoji,msg.guild.me)
+				await msg.remove_reaction(payload.emoji,msg.guild.me)
 
 				"""
 				await channel.typing()
