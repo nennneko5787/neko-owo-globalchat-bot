@@ -354,9 +354,9 @@ async def on_raw_reaction_add(payload):
 	cursor1 = connection.cursor(cursor_factory=DictCursor)
 	cursor2 = connection.cursor(cursor_factory=DictCursor)
 	ch = client.get_channel(payload.channel_id)
-	message = ch.fetch_message(payload.message_id)
-	if message.author != message.guild.me:
-		query = (message.id,)
+	ms = ch.fetch_message(payload.message_id)
+	if ms.author != ms.guild.me:
+		query = (ms.id,)
 		cursor1.execute("SELECT * FROM message WHERE message = %s",query)
 		query_result = cursor1.fetchone()
 		cursor1.close()
@@ -367,7 +367,7 @@ async def on_raw_reaction_add(payload):
 		cursor2.close()
 
 		for dic in query_result:
-			if int(dic["message"]) != message.id:
+			if int(dic["message"]) != ms.id:
 				channel = client.get_channel(int(dic["channel"]))
 				msg = await channel.fetch_message(int(dic["message"]))
 				await msg.add_reaction(payload.emoji)
@@ -443,9 +443,9 @@ async def on_raw_reaction_remove(payload):
 	cursor1 = connection.cursor(cursor_factory=DictCursor)
 	cursor2 = connection.cursor(cursor_factory=DictCursor)
 	ch = client.get_channel(payload.channel_id)
-	message = ch.fetch_message(payload.message_id)
-	if message.author != message.guild.me:
-		query = (message.id,)
+	ms = ch.fetch_message(payload.message_id)
+	if ms.author != ms.guild.me:
+		query = (ms.id,)
 		cursor1.execute("SELECT * FROM message WHERE message = %s",query)
 		query_result = cursor1.fetchone()
 		cursor1.close()
@@ -456,7 +456,7 @@ async def on_raw_reaction_remove(payload):
 		cursor2.close()
 
 		for dic in query_result:
-			if int(dic["message"]) != message.id:
+			if int(dic["message"]) != ms.id:
 				channel = client.get_channel(int(dic["channel"]))
 				msg = await channel.fetch_message(int(dic["message"]))
 				await msg.remove_reaction(payload.emoji,msg.guild.me)
