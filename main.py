@@ -23,7 +23,6 @@ connection = psycopg2.connect(
 # カーソルをオープンします
 _cursor = connection.cursor(cursor_factory=DictCursor)
 _cursor.execute("DELETE FROM message")
-_query_result = _cursor.fetchone()
 _cursor.close()
 
 last_commit_dt = datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=9)))
