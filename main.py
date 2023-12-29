@@ -363,13 +363,13 @@ async def on_reaction_add(reaction, user):
 		cursor2.execute("SELECT * FROM message WHERE raw_message = %s",que)
 		query_result = cursor2.fetchall()
 		cursor2.close()
-"""
+
 		for dic in query_result:
 			if int(dic["message"]) != reaction.message.id:
 				channel = client.get_channel(int(dic["channel"]))
 				msg = await channel.fetch_message(int(dic["message"]))
 				await msg.add_reaction(reaction.emoji)
-
+"""
 				await channel.typing()
 				embed = discord.Embed(
 					description=f"{reaction.emoji} とリアクションしました！",
@@ -451,13 +451,13 @@ async def on_reaction_remove(reaction, user):
 		query_result = cursor2.fetchall()
 		connection.commit()
 		cursor2.close()
-"""
+
 		for dic in query_result:
 			if int(dic["message"]) != reaction.message.id:
 				channel = client.get_channel(int(dic["channel"]))
 				msg = await channel.fetch_message(int(dic["message"]))
 				await msg.remove_reaction(reaction.emoji,msg.guild.me)
-
+"""
 				await channel.typing()
 				embed = discord.Embed(
 					description=f"{reaction.emoji} のリアクションを取り消しました...",
