@@ -363,7 +363,7 @@ async def on_reaction_add(reaction, user):
 		cursor2.execute("SELECT * FROM message WHERE raw_message = %s",que)
 		query_result = cursor2.fetchall()
 		cursor2.close()
-
+"""
 		for dic in query_result:
 			if int(dic["message"]) != reaction.message.id:
 				channel = client.get_channel(int(dic["channel"]))
@@ -432,6 +432,7 @@ async def on_reaction_add(reaction, user):
 					is True
 				):
 					await channel.send(embed=embed)  # メッセージを送信
+"""
 
 @client.event
 async def on_reaction_remove(reaction, user):
@@ -450,7 +451,7 @@ async def on_reaction_remove(reaction, user):
 		query_result = cursor2.fetchall()
 		connection.commit()
 		cursor2.close()
-		
+"""
 		for dic in query_result:
 			if int(dic["message"]) != reaction.message.id:
 				channel = client.get_channel(int(dic["channel"]))
@@ -522,6 +523,7 @@ async def on_reaction_remove(reaction, user):
 					is True
 				):
 					await channel.send(embed=embed)  # メッセージを送信
+"""
 
 # 起動時に動作する処理
 @client.event
