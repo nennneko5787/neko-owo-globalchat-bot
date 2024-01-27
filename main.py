@@ -11,7 +11,9 @@ import datetime
 import time
 from collections import defaultdict
 
-spamtaisaku = defaultdict(lambda: time.time()+8)
+fuck = time.time()-8
+
+spamtaisaku = defaultdict(lambda: fuck)
 
 url: str = os.environ.get("SUPABASE_URL")
 key: str = os.environ.get("SUPABASE_KEY")
@@ -183,7 +185,8 @@ async def on_message(message):
 			return
 		if (time.time() - spamtaisaku[f"{message.author.id}"]) <= 8:
 			await message.author.create_dm()
-			embed = discord.Embed(title="エラーが発生しました。",description=f"スパムは禁止です。8秒ぐらい待ってからもう一度メッセージの送信をお願いします。({(time.time() - spamtaisaku[f"{message.author.id}"])})",color=discord.Colour.red())
+			otintin = (time.time() - spamtaisaku[f"{message.author.id}"])
+			embed = discord.Embed(title="エラーが発生しました。",description=f"スパムは禁止です。8秒ぐらい待ってからもう一度メッセージの送信をお願いします。({otintin})",color=discord.Colour.red())
 			await message.author.dm_channel.send("",embed=embed)
 			return
 		spamtaisaku[f"{message.author.id}"] = time.time()
