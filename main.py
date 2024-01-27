@@ -12,6 +12,7 @@ import datetime
 url: str = os.environ.get("SUPABASE_URL")
 key: str = os.environ.get("SUPABASE_KEY")
 supabase: Client = create_client(url, key)
+data = supabase.auth.sign_in_with_password({"email": os.environ.get("SUPABASE_EMAIL"), "password": os.environ.get("SUPABASE_PASS")})
 
 last_commit_dt = datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=9)))
 last_commit_date = last_commit_dt.strftime('%Y/%m/%d %H:%M:%S')
