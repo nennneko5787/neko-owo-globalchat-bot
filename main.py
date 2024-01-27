@@ -56,7 +56,6 @@ async def user(interaction: Interaction, message: Message):
 async def user(interaction: Interaction, message: Message):
 	await interaction.response.defer()
 	if message.channel.name == "neko-global-chat":
-		# カーソルをオープンします
 		response = supabase.table('message').select("*").eq('message', message.id).execute()
 		query_result = response.data
 		channel = client.get_channel(int(query_result["raw_channel"]))
@@ -78,7 +77,6 @@ async def user(interaction: Interaction, message: Message):
 	await interaction.response.defer()
 	if interaction.user.id == 1048448686914551879:
 		if message.channel.name == "neko-global-chat":
-			# カーソルをオープンします
 			response = supabase.table('message').select("*").eq('message', message.id).execute()
 			query_result = response.data
 
@@ -102,7 +100,6 @@ async def user(interaction: Interaction, message: Message):
 @client.event
 async def on_message_delete(message):
 	if message.channel.name == "neko-global-chat":
-		# カーソルをオープンします
 		response = supabase.table('message').select("*").eq('message', message.id).execute()
 		query_result = response.data
 
@@ -334,7 +331,6 @@ async def on_message(message):
 
 @client.event
 async def on_reaction_add(reaction, user):
-	# カーソルをオープンします
 	if user != reaction.message.guild.me:
 		response = supabase.table('message').select("*").eq('message', reaction.message.id).execute()
 		query_result = response.data
@@ -350,7 +346,6 @@ async def on_reaction_add(reaction, user):
 
 @client.event
 async def on_reaction_remove(reaction, user):
-	# カーソルをオープンします
 	if user != reaction.message.guild.me:
 		response = supabase.table('message').select("*").eq('message', reaction.message.id).execute()
 		query_result = response.data
