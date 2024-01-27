@@ -6,19 +6,12 @@ from discord import Interaction, Message
 from server import keep_alive
 from discord.ext import tasks
 import asyncio
-import psycopg2
-from psycopg2.extras import DictCursor
+from supabase import create_client, Client
 import datetime
 
-# データベースとのコネクションを確立します。
-connection = psycopg2.connect(
-	"host={} dbname={} user={} password={}".format(
-		os.getenv("db_host"),
-		os.getenv("db_name"),
-		os.getenv("db_user"),
-		os.getenv("db_pass"),
-	)
-)
+url: str = os.environ.get("SUPABASE_URL")
+key: str = os.environ.get("SUPABASE_KEY")
+supabase: Client = create_client(url, key)
 
 last_commit_dt = datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=9)))
 last_commit_date = last_commit_dt.strftime('%Y/%m/%d %H:%M:%S')
@@ -44,11 +37,8 @@ async def user(interaction: Interaction, message: Message):
 	await interaction.response.defer()
 	if message.channel.name == "neko-global-chat":
 		# カーソルをオープンします
-		cursor = connection.cursor(cursor_factory=DictCursor)
-		query = (message.id,)
-		cursor.execute("SELECT * FROM message WHERE message = %s",query)
-		query_result = cursor.fetchone()
-		cursor.close()
+		response = supabase.table('message').select("*").eq('message', message.id).execute()
+		query_result = response.data
 		channel = client.get_channel(int(query_result["raw_channel"]))
 		msg = await channel.fetch_message(int(query_result["raw_message"]))
 		user = msg.author
@@ -67,11 +57,8 @@ async def user(interaction: Interaction, message: Message):
 	await interaction.response.defer()
 	if message.channel.name == "neko-global-chat":
 		# カーソルをオープンします
-		cursor = connection.cursor(cursor_factory=DictCursor)
-		query = (message.id,)
-		cursor.execute("SELECT * FROM message WHERE message = %s",query)
-		query_result = cursor.fetchone()
-		cursor.close()
+		response = supabase.table('message').select("*").eq('message', message.id).execute()
+		query_result = response.data
 		channel = client.get_channel(int(query_result["raw_channel"]))
 		msg = await channel.fetch_message(int(query_result["raw_message"]))
 		guild = msg.guild
@@ -92,17 +79,11 @@ async def user(interaction: Interaction, message: Message):
 	if interaction.user.id == 1048448686914551879:
 		if message.channel.name == "neko-global-chat":
 			# カーソルをオープンします
-			cursor1 = connection.cursor(cursor_factory=DictCursor)
-			cursor2 = connection.cursor(cursor_factory=DictCursor)
-			query = (message.id,)
-			cursor1.execute("SELECT * FROM message WHERE message = %s",query)
-			query_result = cursor1.fetchone()
-			cursor1.close()
+			response = supabase.table('message').select("*").eq('message', message.id).execute()
+			query_result = response.data
 
-			que = (query_result["raw_message"],)
-			cursor2.execute("SELECT * FROM message WHERE raw_message = %s",que)
-			query_result = cursor2.fetchall()
-			cursor2.close()
+			response = supabase.table('message').select("*").eq('raw_message', query_result["raw_message"]).execute()
+			query_result = response.data
 
 			msgid = message.id
 
@@ -122,17 +103,11 @@ async def user(interaction: Interaction, message: Message):
 async def on_message_delete(message):
 	if message.channel.name == "neko-global-chat":
 		# カーソルをオープンします
-		cursor1 = connection.cursor(cursor_factory=DictCursor)
-		cursor2 = connection.cursor(cursor_factory=DictCursor)
-		query = (message.id,)
-		cursor1.execute("SELECT * FROM message WHERE message = %s",query)
-		query_result = cursor1.fetchone()
-		cursor1.close()
+		response = supabase.table('message').select("*").eq('message', message.id).execute()
+		query_result = response.data
 
-		que = (query_result["raw_message"],)
-		cursor2.execute("SELECT * FROM message WHERE raw_message = %s",que)
-		query_result = cursor2.fetchall()
-		cursor2.close()
+		response = supabase.table('message').select("*").eq('raw_message', query_result["raw_message"]).execute()
+		query_result = response.data
 
 		for dic in query_result:
 			if int(dic["message"]) != message.id:
@@ -191,8 +166,6 @@ async def test_command(interaction: discord.Interaction):
 
 @client.event
 async def on_message(message):
-	# カーソルをオープンします
-	cursor = connection.cursor()
 	if message.channel.name == global_channel_name:  # グローバルチャットにメッセージが来たとき
 		# メッセージ受信部
 		if message.author.bot:  # BOTの場合は何もせず終了
@@ -204,9 +177,15 @@ async def on_message(message):
 			embed = discord.Embed(title="エラーが発生しました。",description="禁止ワードが含まれています",color=discord.Colour.red())
 			await message.author.dm_channel.send("",embed=embed)
 			return
-		sql = "INSERT INTO message (message, channel, guild, raw_message, raw_channel, raw_guild) VALUES (%s, %s, %s, %s, %s, %s)"
-		cursor.execute(sql, (message.id, message.channel.id, message.guild.id, message.id, message.channel.id, message.guild.id))
-		connection.commit()
+		datas = {
+			"message": message.id,
+			"channel": message.channel.id,
+			"guild": message.guild.id,
+			"raw_message": message.id,
+			"raw_channel": message.channel.id,
+			"raw_guild": message.guild.id,
+		}
+		data, count = supabase.table('message').insert(datas).execute()
 		# メッセージ送信部
 		for channel in client.get_all_channels():  # BOTが所属する全てのチャンネルをループ
 			if channel.name == global_channel_name:  # グローバルチャット用のチャンネルが見つかったとき
@@ -332,9 +311,15 @@ async def on_message(message):
 						):
 							newmsg = await channel.send(embeds=embeds)  # メッセージを送信
 
-						sql = "INSERT INTO message (message, channel, guild, raw_message, raw_channel, raw_guild) VALUES (%s, %s, %s, %s, %s, %s)"
-						cursor.execute(sql, (newmsg.id, newmsg.channel.id, newmsg.guild.id, message.id, message.channel.id, message.guild.id))
-						connection.commit()
+						datas = {
+							"message": newmsg.id,
+							"channel": newmsg.channel.id,
+							"guild": newmsg.guild.id,
+							"raw_message": message.id,
+							"raw_channel": message.channel.id,
+							"raw_guild": message.guild.id,
+						}
+						data, count = supabase.table('message').insert(datas).execute()
 					except Exception as e:  # work on python 3.x
 						print(
 							"サーバーID[{}]({})にて{}エラーが発生したため、処理をスキップします。".format(
@@ -346,184 +331,38 @@ async def on_message(message):
 		await message.add_reaction("✅")
 		await asyncio.sleep(5)
 		await message.remove_reaction("✅", client.user)
-		cursor.close()
 
 @client.event
 async def on_reaction_add(reaction, user):
 	# カーソルをオープンします
-	cursor1 = connection.cursor(cursor_factory=DictCursor)
-	cursor2 = connection.cursor(cursor_factory=DictCursor)
 	if user != reaction.message.guild.me:
-		query = (reaction.message.id,)
-		cursor1.execute("SELECT * FROM message WHERE message = %s",query)
-		query_result = cursor1.fetchone()
-		cursor1.close()
+		response = supabase.table('message').select("*").eq('message', reaction.message.id).execute()
+		query_result = response.data
 
-		que = (query_result["raw_message"],)
-		cursor2.execute("SELECT * FROM message WHERE raw_message = %s",que)
-		query_result = cursor2.fetchall()
-		cursor2.close()
-"""
+		response = supabase.table('message').select("*").eq('raw_message', query_result["raw_message"]).execute()
+		query_result = response.data
+
 		for dic in query_result:
 			if int(dic["message"]) != reaction.message.id:
 				channel = client.get_channel(int(dic["channel"]))
 				msg = await channel.fetch_message(int(dic["message"]))
 				await msg.add_reaction(reaction.emoji)
 
-				await channel.typing()
-				embed = discord.Embed(
-					description=f"{reaction.emoji} とリアクションしました！",
-					color=user.colour,
-				)  # 埋め込みの説明に、メッセージを挿入し、埋め込みのカラーを紫`#9B95C9`に設定
-				if (user.id == 1048448686914551879) or (
-					user.id == 1026050624556638208
-				):
-					isAdmin = "🛠️"
-				else:
-					isAdmin = ""
-				if user.discriminator != "0":
-					name = "{}#{}".format(
-						user.name, user.discriminator
-					)
-				else:
-					name = "{}".format(user.name)
-
-				if user.display_name is not name:
-					embed.set_author(
-						name="{}({}) {}".format(
-							user.display_name, name, isAdmin
-						),
-						icon_url=user.display_avatar.url,
-					)
-				else:
-					embed.set_author(
-						name="{} {}".format(name, isAdmin),
-						icon_url=user.display_avatar.url,
-					)
-
-				reference_content = ""
-				for (
-					string
-				) in (
-					reaction.message.content.splitlines()
-				):  # 埋め込みのメッセージを行で分割してループ
-					reference_content += (
-						"> " + string + "\n"
-					)  # 各行の先頭に`> `をつけて結合
-
-				reference_value = "**@{}**\n{}".format(
-					embed.author.name, reference_content
-				)  # 返信メッセージを生成
-
-				embed.add_field(
-					name="内容", value=reference_value, inline=True
-				)  # 埋め込みに返信メッセージを追加
-
-				jst_datetime = datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=9)))
-				embed.set_footer(
-					text="{} | {}".format(
-						user.guild.name,
-						jst_datetime.strftime("%Y/%m/%d %H:%M:%S.%f")
-					),
-					icon_url=user.guild.icon,
-				)
-				if (
-					channel.permissions_for(channel.guild.me).send_messages
-					is True
-				):
-					await channel.send(embed=embed)  # メッセージを送信
-"""
-
 @client.event
 async def on_reaction_remove(reaction, user):
 	# カーソルをオープンします
-	cursor1 = connection.cursor(cursor_factory=DictCursor)
-	cursor2 = connection.cursor(cursor_factory=DictCursor)
 	if user != reaction.message.guild.me:
-		query = (reaction.message.id,)
-		cursor1.execute("SELECT * FROM message WHERE message = %s",query)
-		query_result = cursor1.fetchone()
-		connection.commit()
-		cursor1.close()
+		response = supabase.table('message').select("*").eq('message', reaction.message.id).execute()
+		query_result = response.data
 
-		que = (query_result["raw_message"],)
-		cursor2.execute("SELECT * FROM message WHERE raw_message = %s",que)
-		query_result = cursor2.fetchall()
-		connection.commit()
-		cursor2.close()
-"""
+		response = supabase.table('message').select("*").eq('raw_message', query_result["raw_message"]).execute()
+		query_result = response.data
+
 		for dic in query_result:
 			if int(dic["message"]) != reaction.message.id:
 				channel = client.get_channel(int(dic["channel"]))
 				msg = await channel.fetch_message(int(dic["message"]))
 				await msg.remove_reaction(reaction.emoji,msg.guild.me)
-
-				await channel.typing()
-				embed = discord.Embed(
-					description=f"{reaction.emoji} のリアクションを取り消しました...",
-					color=user.colour,
-				)  # 埋め込みの説明に、メッセージを挿入し、埋め込みのカラーを紫`#9B95C9`に設定
-				embed.add_field(
-					name="返信しました", value=reference_value, inline=True
-				)  # 埋め込みに返信メッセージを追加
-				if (user.id == 1048448686914551879) or (
-					user.id == 1026050624556638208
-				):
-					isAdmin = "🛠️"
-				else:
-					isAdmin = ""
-				if user.discriminator != "0":
-					name = "{}#{}".format(
-						user.name, user.discriminator
-					)
-				else:
-					name = "{}".format(user.name)
-
-				if user.display_name is not name:
-					embed.set_author(
-						name="{}({}) {}".format(
-							user.display_name, name, isAdmin
-						),
-						icon_url=user.display_avatar.url,
-					)
-				else:
-					embed.set_author(
-						name="{} {}".format(name, isAdmin),
-						icon_url=user.display_avatar.url,
-					)
-
-				reference_content = ""
-				for (
-					string
-				) in (
-					reaction.message.content.splitlines()
-				):  # 埋め込みのメッセージを行で分割してループ
-					reference_content += (
-						"> " + string + "\n"
-					)  # 各行の先頭に`> `をつけて結合
-
-				reference_value = "**@{}**\n{}".format(
-					embed.author.name, reference_content
-				)  # 返信メッセージを生成
-
-				embed.add_field(
-					name="内容", value=reference_value, inline=True
-				)  # 埋め込みに返信メッセージを追加
-
-				jst_datetime = datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=9)))
-				embed.set_footer(
-					text="{} | {}".format(
-						user.guild.name,
-						jst_datetime.strftime("%Y/%m/%d %H:%M:%S.%f")
-					),
-					icon_url=user.guild.icon,
-				)
-				if (
-					channel.permissions_for(channel.guild.me).send_messages
-					is True
-				):
-					await channel.send(embed=embed)  # メッセージを送信
-"""
 
 # 起動時に動作する処理
 @client.event
@@ -536,7 +375,7 @@ async def on_ready():
 async def reloadPresence():
 	await client.change_presence(
 		activity=discord.Game(
-			name="#neko-global-chat | deployed: {} | {} Servers".format(
+			name="#neko-global-chat | {} Servers | deployed: {}".format(
 				last_commit_date,
 				len(client.guilds)
 			)

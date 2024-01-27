@@ -1,4 +1,4 @@
 discord.py
 flask
 pytz
-psycopg2-binary
+supabase
