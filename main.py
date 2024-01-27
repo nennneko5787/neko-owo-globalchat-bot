@@ -352,7 +352,7 @@ async def on_reaction_add(reaction, user):
 		query_result = response.data[0]
 
 		response = supabase.table('message').select("*").eq('raw_message', query_result["raw_message"]).execute()
-		query_result = response.data[0]
+		query_result = response.data
 
 		for dic in query_result:
 			if int(dic["message"]) != reaction.message.id:
@@ -367,7 +367,7 @@ async def on_reaction_remove(reaction, user):
 		query_result = response.data[0]
 
 		response = supabase.table('message').select("*").eq('raw_message', query_result["raw_message"]).execute()
-		query_result = response.data[0]
+		query_result = response.data
 
 		for dic in query_result:
 			if int(dic["message"]) != reaction.message.id:
