@@ -363,17 +363,18 @@ async def on_reaction_add(reaction, user):
 @client.event
 async def on_reaction_remove(reaction, user):
 	if user != reaction.message.guild.me:
-		response = supabase.table('message').select("*").eq('message', reaction.message.id).execute()
-		query_result = response.data[0]
+		if reaction.count <= 0:
+			response = supabase.table('message').select("*").eq('message', reaction.message.id).execute()
+			query_result = response.data[0]
 
-		response = supabase.table('message').select("*").eq('raw_message', query_result["raw_message"]).execute()
-		query_result = response.data
+			response = supabase.table('message').select("*").eq('raw_message', query_result["raw_message"]).execute()
+			query_result = response.data
 
-		for dic in query_result:
-			if int(dic["message"]) != reaction.message.id:
-				channel = client.get_channel(int(dic["channel"]))
-				msg = await channel.fetch_message(int(dic["message"]))
-				await msg.remove_reaction(reaction.emoji,msg.guild.me)
+			for dic in query_result:
+				if int(dic["message"]) != reaction.message.id:
+					channel = client.get_channel(int(dic["channel"]))
+					msg = await channel.fetch_message(int(dic["message"]))
+					await msg.remove_reaction(reaction.emoji,msg.guild.me)
 
 # 起動時に動作する処理
 @client.event
