@@ -186,7 +186,7 @@ async def on_message(message):
 		if (time.time() - spamtaisaku[f"{message.author.id}"]) <= 8:
 			await message.author.create_dm()
 			otintin = (time.time() - spamtaisaku[f"{message.author.id}"])
-			embed = discord.Embed(title="エラーが発生しました。",description=f"スパムは禁止です。8秒ぐらい待ってからもう一度メッセージの送信をお願いします。({otintin})",color=discord.Colour.red())
+			embed = discord.Embed(title="エラーが発生しました。",description=f"スパムは禁止です。あと{8 - otintin}秒待ってからもう一度メッセージを送信してさい。",color=discord.Colour.red())
 			await message.author.dm_channel.send("",embed=embed)
 			return
 		spamtaisaku[f"{message.author.id}"] = time.time()
