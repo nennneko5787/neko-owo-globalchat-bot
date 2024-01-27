@@ -9,6 +9,7 @@ import asyncio
 from supabase import create_client, Client
 import datetime
 import time
+from collections import defaultdict
 
 spamtaisaku = defaultdict(lambda: time.time())
 
