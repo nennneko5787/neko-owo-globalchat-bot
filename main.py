@@ -11,7 +11,7 @@ import datetime
 import time
 from collections import defaultdict
 
-spamtaisaku = defaultdict(lambda: time.time())
+spamtaisaku = defaultdict(lambda: 20000000000000)
 
 url: str = os.environ.get("SUPABASE_URL")
 key: str = os.environ.get("SUPABASE_KEY")
