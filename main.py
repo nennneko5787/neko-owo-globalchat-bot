@@ -372,8 +372,8 @@ async def reloadPresence():
 	await client.change_presence(
 		activity=discord.Game(
 			name="#neko-global-chat | {} Servers | deployed: {}".format(
-				last_commit_date,
-				len(client.guilds)
+				len(client.guilds),
+				last_commit_date
 			)
 		)
 	)
