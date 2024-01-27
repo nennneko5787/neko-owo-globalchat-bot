@@ -8,6 +8,9 @@ from discord.ext import tasks
 import asyncio
 from supabase import create_client, Client
 import datetime
+import time
+
+spamtaisaku = defaultdict(lambda: time.time())
 
 url: str = os.environ.get("SUPABASE_URL")
 key: str = os.environ.get("SUPABASE_KEY")
@@ -177,6 +180,12 @@ async def on_message(message):
 			embed = discord.Embed(title="エラーが発生しました。",description="禁止ワードが含まれています",color=discord.Colour.red())
 			await message.author.dm_channel.send("",embed=embed)
 			return
+		if (time.time() - spamtaisaku[f"{message.author.id}"]) <= 8:
+			await message.author.create_dm()
+			embed = discord.Embed(title="エラーが発生しました。",description="スパムは禁止です。8秒ぐらい待ってからもう一度メッセージの送信をお願いします。",color=discord.Colour.red())
+			await message.author.dm_channel.send("",embed=embed)
+			return
+		spamtaisaku[f"{message.author.id}"] = time.time()
 		datas = {
 			"message": message.id,
 			"channel": message.channel.id,
