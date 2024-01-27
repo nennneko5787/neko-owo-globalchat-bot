@@ -150,7 +150,7 @@ async def test_command(interaction: discord.Interaction):
 				await interaction.channel.send(f"Error(おそらく権限が足りない): {guild.name}({guild.id})")
 				if guild.id != 861590137116819486:
 					await guild.owner.create_dm()
-					embed = discord.Embed(title="neko's global chat botについて",description="こんにちは。あなたのサーバーで、neko's global chat botが正しく導入されていないことが確認されました。\nですので、Discordサーバーにて`neko-global-chat`という名前のテキストチャンネルを作成していただければなと思います。",color=0xda70d6)
+					embed = discord.Embed(title="neko's global chat botについて",description="こんにちは。あなたのサーバーで、neko's global chat botが正しく導入されていないことが確認されました。\nですので、Discordサーバーにて`neko-global-chat`という名前のテキストチャンネルを作成していただければなと思います。\nこの件についてのお問い合わせは、このDMではなく、**nennneko5787**のDMまでどうぞ。",color=0xda70d6)
 					embed.add_field(name="正しく導入されていないことが確認できたサーバー",value=guild.name)
 					embed.set_author(name="nennneko5787",icon_url="https://i.imgur.com/zJ094I4.png")
 					await guild.owner.dm_channel.send("",embed=embed)
@@ -164,6 +164,8 @@ async def test_command(interaction: discord.Interaction):
 
 @client.event
 async def on_message(message):
+	if message.author.id == client.id:
+		return
 	if message.channel.name == global_channel_name:  # グローバルチャットにメッセージが来たとき
 		# メッセージ受信部
 		if message.author.bot:  # BOTの場合は何もせず終了
@@ -186,123 +188,123 @@ async def on_message(message):
 		data, count = supabase.table('message').insert(datas).execute()
 		# メッセージ送信部
 		for channel in client.get_all_channels():  # BOTが所属する全てのチャンネルをループ
-			if channel.name == global_channel_name:  # グローバルチャット用のチャンネルが見つかったとき
-				if channel != message.channel:  # 発言したチャンネルには送らない
-					await channel.typing()
-					embed = discord.Embed(
-						description=message.content,
-						color=message.author.colour,
-						url="https://owo-neko-globalchat-bot.onrender.com/?message={}&channel={}&guild={}".format(
-							message.id,
-							message.channel.id,
-							message.guild.id
-						),
-					)  # 埋め込みの説明に、メッセージを挿入し、埋め込みのカラーを紫`#9B95C9`に設定
-					if (message.author.id == 1048448686914551879) or (
-						message.author.id == 1026050624556638208
-					):
-						isAdmin = "🛠️"
-					else:
-						isAdmin = ""
-					if message.author.discriminator != "0":
-						name = "{}#{}".format(
-							message.author.name, message.author.discriminator
-						)
-					else:
-						name = "{}".format(message.author.name)
-
-					if message.author.display_name is not name:
-						embed.set_author(
-							name="{}({}) {}".format(
-								message.author.display_name, name, isAdmin
+			try:
+				if channel.name == global_channel_name:  # グローバルチャット用のチャンネルが見つかったとき
+					if channel != message.channel:  # 発言したチャンネルには送らない
+						await channel.typing()
+						embed = discord.Embed(
+							description=message.content,
+							color=message.author.colour,
+							url="https://owo-neko-globalchat-bot.onrender.com/?message={}&channel={}&guild={}".format(
+								message.id,
+								message.channel.id,
+								message.guild.id
 							),
-							icon_url=message.author.display_avatar.url,
-						)
-					else:
-						embed.set_author(
-							name="{} {}".format(name, isAdmin),
-							icon_url=message.author.display_avatar.url,
+						)  # 埋め込みの説明に、メッセージを挿入し、埋め込みのカラーを紫`#9B95C9`に設定
+						if (message.author.id == 1048448686914551879) or (
+							message.author.id == 1026050624556638208
+						):
+							isAdmin = "🛠️"
+						else:
+							isAdmin = ""
+						if message.author.discriminator != "0":
+							name = "{}#{}".format(
+								message.author.name, message.author.discriminator
+							)
+						else:
+							name = "{}".format(message.author.name)
+
+						if message.author.display_name is not name:
+							embed.set_author(
+								name="{}({}) {}".format(
+									message.author.display_name, name, isAdmin
+								),
+								icon_url=message.author.display_avatar.url,
+							)
+						else:
+							embed.set_author(
+								name="{} {}".format(name, isAdmin),
+								icon_url=message.author.display_avatar.url,
+							)
+
+						jst_datetime = message.created_at.astimezone(datetime.timezone(datetime.timedelta(hours=9)))
+						embed.set_footer(
+							text="{} | {}".format(
+								message.guild.name,
+								jst_datetime.strftime("%Y/%m/%d %H:%M:%S")
+							),
+							icon_url=message.guild.icon,
 						)
 
-					jst_datetime = message.created_at.astimezone(datetime.timezone(datetime.timedelta(hours=9)))
-					embed.set_footer(
-						text="{} | {}".format(
-							message.guild.name,
-							jst_datetime.strftime("%Y/%m/%d %H:%M:%S")
-						),
-						icon_url=message.guild.icon,
-					)
-
-					if message.reference:  # 返信メッセージであるとき
-						reference_msg = await message.channel.fetch_message(
-							message.reference.message_id
-						)  # メッセージIDから、元のメッセージを取得
-						if (
-							reference_msg.embeds and reference_msg.author == client.user
-						):  # 返信の元のメッセージが、埋め込みメッセージかつ、このBOTが送信したメッセージのとき→グローバルチャットの他のサーバーからのメッセージと判断
-							reference_message_content = reference_msg.embeds[
-								0
-							].description  # メッセージの内容を埋め込みから取得
-							reference_message_author = reference_msg.embeds[
-								0
-							].author.name  # メッセージのユーザーを埋め込みから取得
-						elif (
-							reference_msg.author != client.user
-						):  # 返信の元のメッセージが、このBOTが送信したメッセージでは無い時→同じチャンネルのメッセージと判断
-							reference_message_content = (
-								reference_msg.content
-							)  # メッセージの内容を取得
-							reference_message_author = (
-								reference_msg.author.name
-								+ "#"
-								+ reference_msg.author.discriminator
-							)  # メッセージのユーザーを取得
-						reference_content = ""
-						for (
-							string
-						) in (
-							reference_message_content.splitlines()
-						):  # 埋め込みのメッセージを行で分割してループ
-							reference_content += (
-								"> " + string + "\n"
-							)  # 各行の先頭に`> `をつけて結合
-						reference_value = "**@{}**\n{}".format(
-							reference_message_author, reference_content
-						)  # 返信メッセージを生成
-						embed.add_field(
-							name="返信しました", value=reference_value, inline=True
-						)  # 埋め込みに返信メッセージを追加
-					embeds = []
-					embeds.append(embed)
-					if message.attachments != []:  # 添付ファイルが存在するとき
-						for tenpura in message.attachments:  # 全ての添付ファイルをループ
-							embed2 = discord.Embed(
-								url="https://owo-neko-globalchat-bot.onrender.com/?message={}&channel={}&guild={}".format(
-									message.id,
-									message.channel.id,
-									message.guild.id
-								),
-							)  # 埋め込みの説明
-							embed2.set_image(url=tenpura)
-							embeds.append(embed2)
+						if message.reference:  # 返信メッセージであるとき
+							reference_msg = await message.channel.fetch_message(
+								message.reference.message_id
+							)  # メッセージIDから、元のメッセージを取得
+							if (
+								reference_msg.embeds and reference_msg.author == client.user
+							):  # 返信の元のメッセージが、埋め込みメッセージかつ、このBOTが送信したメッセージのとき→グローバルチャットの他のサーバーからのメッセージと判断
+								reference_message_content = reference_msg.embeds[
+									0
+								].description  # メッセージの内容を埋め込みから取得
+								reference_message_author = reference_msg.embeds[
+									0
+								].author.name  # メッセージのユーザーを埋め込みから取得
+							elif (
+								reference_msg.author != client.user
+							):  # 返信の元のメッセージが、このBOTが送信したメッセージでは無い時→同じチャンネルのメッセージと判断
+								reference_message_content = (
+									reference_msg.content
+								)  # メッセージの内容を取得
+								reference_message_author = (
+									reference_msg.author.name
+									+ "#"
+									+ reference_msg.author.discriminator
+								)  # メッセージのユーザーを取得
+							reference_content = ""
+							for (
+								string
+							) in (
+								reference_message_content.splitlines()
+							):  # 埋め込みのメッセージを行で分割してループ
+								reference_content += (
+									"> " + string + "\n"
+								)  # 各行の先頭に`> `をつけて結合
+							reference_value = "**@{}**\n{}".format(
+								reference_message_author, reference_content
+							)  # 返信メッセージを生成
 							embed.add_field(
-								name="📎添付ファイル", value=tenpura.url, inline=True
-							)  # 埋め込みに添付ファイルのリンクを追加
-					if message.stickers != []:  # スタンプが存在するとき
-						for tenpura in message.stickers:  # 全てのスタンプをループ
-							embed2 = discord.Embed(
-								url="https://owo-neko-globalchat-bot.onrender.com/?message={}&channel={}&guild={}".format(
-									message.id,
-									message.channel.id,
-									message.guild.id
-								),
-							)  # 埋め込みの説明
-							embed2.set_image(url=tenpura.url)
-							embeds.append(embed2)
-							embed.add_field(
-								name="🖍️スタンプ", value=tenpura.url, inline=True
-							)  # 埋め込みにスタンプのリンクを追加
-					try:
+								name="返信しました", value=reference_value, inline=True
+							)  # 埋め込みに返信メッセージを追加
+						embeds = []
+						embeds.append(embed)
+						if message.attachments != []:  # 添付ファイルが存在するとき
+							for tenpura in message.attachments:  # 全ての添付ファイルをループ
+								embed2 = discord.Embed(
+									url="https://owo-neko-globalchat-bot.onrender.com/?message={}&channel={}&guild={}".format(
+										message.id,
+										message.channel.id,
+										message.guild.id
+									),
+								)  # 埋め込みの説明
+								embed2.set_image(url=tenpura)
+								embeds.append(embed2)
+								embed.add_field(
+									name="📎添付ファイル", value=tenpura.url, inline=True
+								)  # 埋め込みに添付ファイルのリンクを追加
+						if message.stickers != []:  # スタンプが存在するとき
+							for tenpura in message.stickers:  # 全てのスタンプをループ
+								embed2 = discord.Embed(
+									url="https://owo-neko-globalchat-bot.onrender.com/?message={}&channel={}&guild={}".format(
+										message.id,
+										message.channel.id,
+										message.guild.id
+									),
+								)  # 埋め込みの説明
+								embed2.set_image(url=tenpura.url)
+								embeds.append(embed2)
+								embed.add_field(
+									name="🖍️スタンプ", value=tenpura.url, inline=True
+								)  # 埋め込みにスタンプのリンクを追加
 						if (
 							channel.permissions_for(channel.guild.me).send_messages
 							is True
@@ -318,13 +320,13 @@ async def on_message(message):
 							"raw_guild": message.guild.id,
 						}
 						data, count = supabase.table('message').insert(datas).execute()
-					except Exception as e:  # work on python 3.x
-						print(
-							"サーバーID[{}]({})にて{}エラーが発生したため、処理をスキップします。".format(
-								channel.id, channel.guild.name, str(e)
-							)
-						)
-						continue
+			except Exception as e:  # work on python 3.x
+				print(
+					"サーバーID[{}]({})にて{}エラーが発生したため、処理をスキップします。".format(
+						channel.id, channel.guild.name, str(e)
+					)
+				)
+				continue
 
 		await message.add_reaction("✅")
 		await asyncio.sleep(5)
