@@ -45,7 +45,7 @@ async def user(interaction: Interaction, message: Message):
 	if message.channel.name == "neko-global-chat":
 		# カーソルをオープンします
 		response = supabase.table('message').select("*").eq('message', message.id).execute()
-		query_result = response.data
+		query_result = response.data[0]
 		channel = client.get_channel(int(query_result["raw_channel"]))
 		msg = await channel.fetch_message(int(query_result["raw_message"]))
 		user = msg.author
@@ -64,7 +64,7 @@ async def user(interaction: Interaction, message: Message):
 	await interaction.response.defer()
 	if message.channel.name == "neko-global-chat":
 		response = supabase.table('message').select("*").eq('message', message.id).execute()
-		query_result = response.data
+		query_result = response.data[0]
 		channel = client.get_channel(int(query_result["raw_channel"]))
 		msg = await channel.fetch_message(int(query_result["raw_message"]))
 		guild = msg.guild
@@ -85,10 +85,10 @@ async def user(interaction: Interaction, message: Message):
 	if interaction.user.id == 1048448686914551879:
 		if message.channel.name == "neko-global-chat":
 			response = supabase.table('message').select("*").eq('message', message.id).execute()
-			query_result = response.data
+			query_result = response.data[0]
 
 			response = supabase.table('message').select("*").eq('raw_message', query_result["raw_message"]).execute()
-			query_result = response.data
+			query_result = response.data[0]
 
 			msgid = message.id
 
@@ -108,10 +108,10 @@ async def user(interaction: Interaction, message: Message):
 async def on_message_delete(message):
 	if message.channel.name == "neko-global-chat":
 		response = supabase.table('message').select("*").eq('message', message.id).execute()
-		query_result = response.data
+		query_result = response.data[0]
 
 		response = supabase.table('message').select("*").eq('raw_message', query_result["raw_message"]).execute()
-		query_result = response.data
+		query_result = response.data[0]
 
 		for dic in query_result:
 			if int(dic["message"]) != message.id:
@@ -349,10 +349,10 @@ async def on_message(message):
 async def on_reaction_add(reaction, user):
 	if user != reaction.message.guild.me:
 		response = supabase.table('message').select("*").eq('message', reaction.message.id).execute()
-		query_result = response.data
+		query_result = response.data[0]
 
 		response = supabase.table('message').select("*").eq('raw_message', query_result["raw_message"]).execute()
-		query_result = response.data
+		query_result = response.data[0]
 
 		for dic in query_result:
 			if int(dic["message"]) != reaction.message.id:
@@ -364,10 +364,10 @@ async def on_reaction_add(reaction, user):
 async def on_reaction_remove(reaction, user):
 	if user != reaction.message.guild.me:
 		response = supabase.table('message').select("*").eq('message', reaction.message.id).execute()
-		query_result = response.data
+		query_result = response.data[0]
 
 		response = supabase.table('message').select("*").eq('raw_message', query_result["raw_message"]).execute()
-		query_result = response.data
+		query_result = response.data[0]
 
 		for dic in query_result:
 			if int(dic["message"]) != reaction.message.id:
