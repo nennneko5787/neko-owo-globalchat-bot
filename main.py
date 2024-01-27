@@ -164,7 +164,7 @@ async def test_command(interaction: discord.Interaction):
 
 @client.event
 async def on_message(message):
-	if message.author.id == client.id:
+	if message.author.id == client.user.id:
 		return
 	if message.channel.name == global_channel_name:  # グローバルチャットにメッセージが来たとき
 		# メッセージ受信部
