@@ -176,19 +176,30 @@ async def on_message(message):
 		# メッセージ受信部
 		if message.author.bot:  # BOTの場合は何もせず終了
 			return
+		
 		if message.guild.id == 1136234915663466496:
 			return
+		
 		if message.content.find("discord.gg") != -1 or message.content.find("discord.com/invite/") != -1 or message.content.find("dsc.gg") != -1:
 			await message.author.create_dm()
 			embed = discord.Embed(title="エラーが発生しました。",description="禁止ワードが含まれています",color=discord.Colour.red())
 			await message.author.dm_channel.send("",embed=embed)
 			return
+		
+		if len(message.content) > 140:
+			await message.author.create_dm()
+			otintin = len(message.content) - 140
+			embed = discord.Embed(title="エラーが発生しました。",description=f"140文字以上を入力することはできません。{otintin}文字減らしてもう一度メッセージを送信してさい。",color=discord.Colour.red())
+			await message.author.dm_channel.send("",embed=embed)
+			return
+		
 		if (time.time() - spamtaisaku[f"{message.author.id}"]) <= 8:
 			await message.author.create_dm()
 			otintin = (time.time() - spamtaisaku[f"{message.author.id}"])
 			embed = discord.Embed(title="エラーが発生しました。",description=f"スパムは禁止です。あと{8 - otintin}秒待ってからもう一度メッセージを送信してさい。",color=discord.Colour.red())
 			await message.author.dm_channel.send("",embed=embed)
 			return
+		
 		spamtaisaku[f"{message.author.id}"] = time.time()
 		datas = {
 			"message": message.id,
@@ -347,7 +358,7 @@ async def on_message(message):
 
 @client.event
 async def on_reaction_add(reaction, user):
-	if user != reaction.message.guild.me:
+	if user.id != reaction.message.guild.me.id:
 		response = supabase.table('message').select("*").eq('message', reaction.message.id).execute()
 		query_result = response.data[0]
 
@@ -362,7 +373,7 @@ async def on_reaction_add(reaction, user):
 
 @client.event
 async def on_reaction_remove(reaction, user):
-	if user != reaction.message.guild.me:
+	if user.id != reaction.message.guild.me.id:
 		if reaction.count <= 0:
 			response = supabase.table('message').select("*").eq('message', reaction.message.id).execute()
 			query_result = response.data[0]
