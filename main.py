@@ -275,12 +275,12 @@ async def on_message(message):
 			await message.author.dm_channel.send("", embed=embed)
 			return
 
-		if len(message.content) > 140:
+		if len(message.content) > 500:
 			await message.author.create_dm()
-			otintin = len(message.content) - 140
+			otintin = len(message.content) - 500
 			embed = discord.Embed(
 				title="エラーが発生しました。",
-				description=f"140文字以上を入力することはできません。{otintin}文字減らしてもう一度メッセージを送信してさい。",
+				description=f"500文字以上を入力することはできません。{otintin}文字減らしてもう一度メッセージを送信してさい。",
 				color=discord.Colour.red(),
 			)
 			await message.author.dm_channel.send("", embed=embed)
